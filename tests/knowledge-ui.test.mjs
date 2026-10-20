@@ -17,3 +17,10 @@ test('path choices identify concepts and ordered relationships rather than opaqu
   const html = renderToStaticMarkup(React.createElement(m.Path, { startNodeId: 'a', edgeIds: ['ab'], edges, nodes }));
   assert.match(html, /概念甲/); assert.match(html, /概念乙/); assert.doesNotMatch(html, />ab</);
 });
+test('readable evidence preserves the exact quotation while keeping a short concept term together', () => {
+  const quote = '术语\t\t别名概念甲\n对应说明';
+  const html = renderToStaticMarkup(React.createElement(m.Details, { detail: { item: nodes[0], evidence: [{ id: 'e', quote }] }, nodes }));
+  const rendered = html.match(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/)[1];
+  assert.match(rendered, /class="knowledge-term"/);
+  assert.equal(rendered.replace(/<[^>]*>/g, ''), quote);
+});

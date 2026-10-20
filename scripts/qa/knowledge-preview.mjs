@@ -36,6 +36,21 @@ try {
   await page.getByRole('button', { name: '知识图谱', exact: true }).click();
   await page.getByRole('button', { name: '构建／更新', exact: true }).waitFor();
   await page.getByText('当前显示 300 / 总计 301', { exact: false }).waitFor();
+  for (const width of [1440, 645, 390, 720]) {
+    await page.setViewportSize({ width, height: width === 720 ? 450 : 900 });
+    await page.waitForFunction(() => {
+      const svg = document.querySelector('.knowledge-viewport svg');
+      return Math.abs(svg.getBoundingClientRect().width - svg.viewBox.baseVal.width) < 2;
+    });
+    const dimensions = await page.locator('.knowledge-node text').first().evaluate(e => ({ height: e.getBoundingClientRect().height, font: parseFloat(window.getComputedStyle(e).fontSize) }));
+    assert.ok(dimensions.font >= 14 && dimensions.height >= 13, `readable graph labels at ${width}`);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `no overflow at ${width}`);
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  assert.equal(await page.locator('.knowledge-filters-panel').getAttribute('open'), null);
+  await page.locator('.knowledge-filters-panel > summary').click();
+  await page.getByRole('listbox', { name: '资料', exact: true }).waitFor();
+  await page.locator('.knowledge-filters-panel > summary').click();
   await page.getByRole('button', { name: '放大', exact: true }).click();
   await page.getByRole('button', { name: '概念0', exact: true }).first().click();
   await page.getByText('依据旧版本', { exact: true }).first().waitFor();
@@ -50,6 +65,14 @@ try {
   await page.getByRole('button', { name: '概念0', exact: true }).first().click();
   await page.getByRole('button', { name: '针对当前内容提问' }).click();
   await page.getByText('反向查看不改变关系方向。', { exact: true }).waitFor();
+  await page.setViewportSize({ width: 645, height: 900 });
+  const narrowPanels = await page.evaluate(() => {
+    const canvas = document.querySelector('.knowledge-canvas').getBoundingClientRect();
+    const details = document.querySelector('.knowledge-details').getBoundingClientRect();
+    return { canvasBottom: canvas.bottom, detailsTop: details.top };
+  });
+  assert.ok(narrowPanels.detailsTop >= narrowPanels.canvasBottom, 'narrow evidence panel does not cover the graph');
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole('button', { name: '从这里选择链路' }).click();
   await page.locator('svg g[role="button"]').filter({ has: page.locator('line') }).first().dispatchEvent('click');
   await page.getByText('按顺序选择链路 (1/12)', { exact: true }).waitFor();

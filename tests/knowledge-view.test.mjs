@@ -10,7 +10,27 @@ test('knowledge entry is independent; bounded layout is deterministic and preser
   assert.deepEqual(a, layoutKnowledge({ nodes, edges: [], width: 1000, height: 600 }));
   const b = layoutKnowledge({ nodes: nodes.slice(0, 5), previousPositions: a.positions, width: 1000, height: 600 });
   assert.deepEqual(b.positions['0'], a.positions['0']);
-  assert.ok(Object.values(a.positions).every(p => Number.isFinite(p.x) && p.x >= 0 && p.x <= 1000));
+  assert.ok(Object.values(a.positions).every(p => Number.isFinite(p.x) && p.x >= 0 && p.x <= a.bounds.width));
+});
+test('large knowledge graphs grow their world instead of compressing readable node spacing', () => {
+  const nodes = Array.from({ length: 300 }, (_, i) => ({ id: String(i) }));
+  const { positions, bounds } = layoutKnowledge({ nodes, edges: [] });
+  const points = Object.values(positions);
+  assert.ok(bounds.width > 1000 || bounds.height > 600);
+  for (let i = 0; i < points.length; i++) for (let j = i + 1; j < points.length; j++) {
+    assert.ok(Math.abs(points[i].x - points[j].x) >= 200 || Math.abs(points[i].y - points[j].y) >= 110, 'readable, non-overlapping node cells');
+  }
+});
+test('narrowing a graph relays out its results instead of retaining remote world coordinates', () => {
+  const nodes = Array.from({ length: 300 }, (_, i) => ({ id: String(i) }));
+  const large = layoutKnowledge({ nodes });
+  const small = layoutKnowledge({ nodes: nodes.slice(-3), previousPositions: large.positions });
+  assert.ok(Object.values(small.positions).every(p => p.x < 600 && p.y < 400));
+});
+test('replacing equally sized filter results never overlaps retained and newly visible concepts', () => {
+  const first = layoutKnowledge({ nodes: [{ id: 'a' }, { id: 'b' }] });
+  const next = layoutKnowledge({ nodes: [{ id: 'b' }, { id: 'c' }], previousPositions: first.positions });
+  assert.notDeepEqual(next.positions.b, next.positions.c);
 });
 test('navigation remembers focus; stale graph responses cannot replace a new filter', () => {
   let s = reduceKnowledgeView(initialKnowledgeView, { type: 'focus', id: 'a' });
