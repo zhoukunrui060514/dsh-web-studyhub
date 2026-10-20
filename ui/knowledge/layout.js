@@ -13,7 +13,7 @@ export const relationLabel = predicate => ({ causes: '导致', promotes: '促进
 
 // Labels stay at reading size, so choose free quadrants instead of shrinking text.
 export function knowledgeLabels({ nodes, positions, degrees, camera, width, height, selectedId, hoveredId, scopeLabel = '' }) {
-  const ranked = [...nodes].sort((a, b) => Number(b.id === hoveredId) - Number(a.id === hoveredId) || Number(b.id === selectedId) - Number(a.id === selectedId) || (degrees[b.id] || 0) - (degrees[a.id] || 0) || a.id.localeCompare(b.id));
+  const ranked = [...nodes].sort((a, b) => (degrees[b.id] || 0) - (degrees[a.id] || 0) || a.id.localeCompare(b.id));
   const labels = {}, occupied = [], limit = nodes.length <= 24 || camera.zoom >= 1.5 ? 36 : 10;
   const overlap = (a, b) => a.x < b.x + b.w + 6 && a.x + a.w + 6 > b.x && a.y < b.y + b.h + 5 && a.y + a.h + 5 > b.y;
   for (const node of ranked) {

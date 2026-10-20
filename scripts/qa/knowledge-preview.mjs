@@ -43,6 +43,12 @@ try {
       const svg = document.querySelector('.knowledge-viewport svg');
       return Math.abs(svg.getBoundingClientRect().width - svg.viewBox.baseVal.width) < 2;
     });
+    await page.getByRole('button', { name: '适应全图', exact: true }).click();
+    await page.waitForFunction(() => {
+      const value = document.querySelector('.knowledge-viewport svg > g').getAttribute('transform');
+      window.knowledgeCameraStill = window.knowledgeCameraStill?.value === value ? { value, count: window.knowledgeCameraStill.count + 1 } : { value, count: 0 };
+      return window.knowledgeCameraStill.count >= 5;
+    });
     await page.locator('[data-node-id="n0"]').focus();
     const dimensions = await page.locator('[data-node-id="n0"] text').evaluate(e => ({ height: e.getBoundingClientRect().height }));
     assert.ok(dimensions.height >= 13, `readable screen-space graph labels at ${width}`);
