@@ -15,8 +15,7 @@
       padding: 26px var(--space-3-5) var(--space-4);
       display: flex;
       flex-direction: column;
-      /* One row height for every sidebar entry, whatever it says (see ui/SideNav.jsx). 36px: the 任务 entry made it thirteen pages, and at 768 px wide / 900 px tall
-         the rail has to hold them without scrolling (a rail that scrolls moves every row when the active one is clicked). */
+      /* One fixed row height; the page list scrolls separately from the footer. */
       --nav-row: 36px;
       --nav-row-upkeep: 34px;
       /* How far the sidebar's own padding is: the active bar sits on its outer edge. */
@@ -356,6 +355,14 @@
     .top-status .dot.busy {
       background: var(--warn);
       animation: dot-pulse 1.4s var(--ease) infinite;
+    }
+  }
+  :is(.study-app, .study-seat) {
+    .sidebar > .brand, .sidebar > .sidebar-bottom { flex: none; }
+    .sidebar > .side-nav { flex: 1; min-height: 0; overflow-y: auto; }
+    @media (max-height: 650px) {
+      /* Short, zoomed hosts need the whole rail to scroll past the brand and footer. */
+      .sidebar > .side-nav { flex: none; overflow-y: visible; }
     }
   }
   @container study (max-width: 640px) {

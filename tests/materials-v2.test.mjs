@@ -23,7 +23,7 @@ function pdfBytes(text) {
 
 async function fixture(t, options = {}) {
   const root = await mkdtemp(join(tmpdir(), 'materials-v2-'));
-  t.after(() => rm(root, { recursive: true, force: true }));
+  t.after(() => rm(root, { recursive: true, force: true, maxRetries: 5 }));
   const store = new Store(root);
   const ops = createMaterialsOperations({ root,
     read: async () => { const state = await store.read(); return structuredClone({ sources: state.sources, documents: state.documents || [] }); },

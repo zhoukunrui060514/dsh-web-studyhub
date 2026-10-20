@@ -221,3 +221,7 @@
 
 - 不删除任何旧执行器（S6-2）；不改任何运行时行为；不改变匹配器的"按名字"规则（缺口 5）。
 - 缺口 1、2、3、7、8 的处理属于各自的后续步骤（S2-6、S4-10、S6-5 …），不在本步。
+
+## Material knowledge graph registration
+
+`lib/contexts/knowledge/jobs/extract.js` is a managed definition, with each extraction and citation correction behind `context.gateway.step`. `lib/contexts/knowledge/qa.js` is a foreground-request exception: `knowledge.ask` uses the instant metered port and creates no background owner or timer. Tests: knowledge-jobs, knowledge-qa and unified-runtime-architecture.

@@ -7,6 +7,7 @@ import { createServer } from "node:http";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createFakeModel } from "../fake-model.mjs";
+import { knowledgeFixtureReply } from './knowledge-fixtures.mjs';
 
 export const FAKE_OPENAI_MODEL = "fake-tutor";
 
@@ -64,6 +65,7 @@ export async function createFakeOpenAI({ port = 0, host = "127.0.0.1", model, be
         let content = await study(asked, asked);
         let handled = studyLog.slice(before).some((entry) => entry.handler);
         if (!handled) { content = await study(system, asked); handled = studyLog.slice(before).some((entry) => entry.handler); }
+        if (!handled) { const knowledge = knowledgeFixtureReply(system, asked); if (knowledge !== null) { content = knowledge; handled = true; } }
         // DSH prepends <system-reminder> blocks to the user turn; echo only what the learner wrote.
         if (!handled) content = `【StudyHub QA fake model】收到：${prompt.replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, "").trim().slice(0, 60)}`;
         log.push({ at: new Date().toISOString(), model: request.model, stream: !!request.stream, handled,

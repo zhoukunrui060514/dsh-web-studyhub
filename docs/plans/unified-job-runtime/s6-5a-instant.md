@@ -45,6 +45,7 @@ Exactly these, and every `oral.*` (the list is `INSTANT_ACTIONS` and `tests/inst
 - `deck.merge.suggest`
 - `draft.import.propose`
 - `draft.publish.review`
+- `knowledge.ask`
 - `materials.selection.ask`
 - `materials.outline.suggest`
 - `materials.translation.translate`

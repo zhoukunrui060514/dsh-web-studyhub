@@ -34,6 +34,7 @@ test('the estimate line has one outer box and one reserved line whether it is lo
   assert.match(loading, /data-status="loading"/);
   assert.match(ready, /data-status="ready"/);
   assert.match(loading, /token-estimate__info--slot/, 'the loading line keeps the room of the info button');
+  assert.match(loading, /<span class="token-estimate__quiet">/, 'the loading label avoids generic draft small-element margins');
   assert.match(loading, /正在估算/);
 });
 
@@ -72,6 +73,7 @@ test('the 为没覆盖的部分补题 button and 打开 stay put when the estima
     await page.route('**/api/call', async route => { if (/usage\.estimate/.test(route.request().postData() || '')) await gate; await route.continue(); });
     await page.addInitScript(() => { localStorage.setItem('study-ui-language', 'zh'); localStorage.setItem('study-autopilot', 'off'); });
     await page.goto(server.url);
+    await page.locator('.home-drafts summary').first().click();
     const topup = page.locator('.draft-row [data-coverage-topup]').first();
     await topup.waitFor({ timeout: 30000 });
     await page.locator('[data-coverage-topup] [data-token-estimate][data-status="loading"]').waitFor({ timeout: 30000 });

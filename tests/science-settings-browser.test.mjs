@@ -68,6 +68,7 @@ test('science settings apply, persist and run exact local tools in the real app'
   assert.equal(await page.getByRole('checkbox', { name: 'Enable chemical balancing', exact: true }).isChecked(), true);
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.getByRole('button', { name: 'Study library', exact: true }).click();
+  await page.locator('.home-drafts summary').first().click();
   await page.locator('.draft-open').filter({ hasText: 'Image draft' }).click();
   await page.locator('.draft-card summary').click();
   await page.locator('.draft-card input[type="file"]').first().setInputFiles({

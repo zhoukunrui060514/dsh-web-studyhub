@@ -45,24 +45,24 @@ const PLAN_ANCHORS = ["nav", "nav-library", "nav-sources", "nav-generate", "nav-
   "skeleton-main", "workflows-main", "settings-model", "settings-audio", "settings-sample",
   // 2.1.2 refresh (WP29)
   "generate-sources", "generate-options", "generate-summary", "wrongbook-recs", "dashboard-charts", "settings-extensions", "settings-update"];
-const PAGES = new Set(["library", "sources", "generate", "draft", "review", "wrongbook", "exam", "dashboard", "skeleton", "workflows",
+const PAGES = new Set(["library", "sources", "knowledge", "generate", "draft", "review", "wrongbook", "exam", "dashboard", "skeleton", "workflows",
   "settings", "notes", "board", "audio", "live", "graph", "manage", "tasks", "examprep", "book"]);
 
 test("navigation is grouped by when a page is used: every day, now and then, once per course", () => {
   assert.deepEqual(NAV_DEFAULTS, {
-    daily: ["library", "sources", "generate", "tasks", "wrongbook", "workflows", "notes", "board"],
+    daily: ["library", "sources", "knowledge", "generate", "tasks", "wrongbook", "workflows", "notes", "board"],
     periodic: ["exam", "examprep", "book", "dashboard"],
     setup: ["skeleton", "audio", "live"],
   });
   // A learner's saved order still applies; pages it does not mention join at the end of their group.
   const saved = { daily: ["board", "library"], setup: ["live", "audio"] };
   assert.deepEqual(mergeOrder(saved, NAV_DEFAULTS), {
-    daily: ["board", "library", "sources", "generate", "tasks", "wrongbook", "workflows", "notes"],
+    daily: ["board", "library", "sources", "knowledge", "generate", "tasks", "wrongbook", "workflows", "notes"],
     periodic: ["exam", "examprep", "book", "dashboard"],
     setup: ["live", "audio", "skeleton"],
   });
   // An order saved before the regrouping (main / upkeep) keeps working: its order is applied inside the new groups.
-  assert.deepEqual(mergeOrder({ main: ["library", "workflows", "live", "audio"], upkeep: ["sources", "generate", "skeleton"] }, NAV_DEFAULTS).setup,
+  assert.deepEqual(mergeOrder({ main: ["library", "workflows", "live", "audio"], upkeep: ["sources", "knowledge", "generate", "skeleton"] }, NAV_DEFAULTS).setup,
     ["live", "audio", "skeleton"]);
 });
 

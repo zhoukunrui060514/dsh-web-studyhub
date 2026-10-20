@@ -19,13 +19,13 @@ const KEY = "study-nav-order";
 const GROUPS_KEY = "study-nav-groups";
 /** The sidebar's default order: the pages of every day, then those of now and then, then the once-per-course ones. */
 export const NAV_DEFAULTS = Object.freeze({
-  daily: ["library", "sources", "generate", "tasks", "wrongbook", "workflows", "notes", "board"],
+  daily: ["library", "sources", "knowledge", "generate", "tasks", "wrongbook", "workflows", "notes", "board"],
   periodic: ["exam", "examprep", "book", "dashboard"],
   setup: ["skeleton", "audio", "live"],
 });
 /** The groups as drawn: a plain label, one line saying what they hold, and whether the learner can fold them. */
 export const NAV_GROUPS = Object.freeze([
-  { id: "daily", label: "每天", hint: "每天都会用：学习库、资料、创建题组、任务、错题与待巩固、学习流、学习笔记、待办", collapsible: false },
+  { id: "daily", label: "每天", hint: "每天都会用：学习库、资料、知识图谱、创建题组、任务、错题与待巩固、学习流、学习笔记、待办", collapsible: false },
   { id: "periodic", label: "阶段性", hint: "隔一阵用一次：模拟考试、备考补习（DSH 开启后出现）、复习全书、统计", collapsible: true },
   { id: "setup", label: "课程准备与管理", hint: "每门课开头做一次或按需用：知识骨架、音频转写、课堂实录", collapsible: true },
 ]);

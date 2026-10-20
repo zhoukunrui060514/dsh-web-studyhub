@@ -137,11 +137,17 @@ export function useLearningNavigation({ core, lib, nav, session, rootRef }) {
 
   // A source opened where a place of its text is (a part of a question run, 在资料中查看): the reader is told the offset and finds the section it is in (the library's snapshot has no text to
   // do it here), the way the way back to a stored reading position hands it a section.
-  const openSourceAt = useCallback((sourceId, offset) => {
-    const source = (refs.dataRef.current?.sources || []).find((item) => item.id === sourceId);
+  const openSourceAt = useCallback(async (sourceId, offset, citation) => {
+    let source = (refs.dataRef.current?.sources || []).find((item) => item.id === sourceId);
     if (!source) { notify(ui('逐字稿资料已被删除。')); return; }
-    setModal({ type: 'source', source, resume: { at: Math.max(0, Number(offset) || 0), sectionOffset: 0, scrollTop: 0, progress: 0, nonce: Date.now() } });
-  }, [notify, refs, setModal]);
+    if (citation) {
+      const result = await call('materials.selection.resolve', { sourceId, revision: citation.documentRevision || citation.revision,
+        start: citation.start, end: citation.end, quote: citation.quote, ...(citation.page ? { page: citation.page } : {}) });
+      if (result.status !== 'resolved') throw new Error(result.message || ui('引用位置与当前文字不一致，请重新核对这段原文。'));
+      source = { ...source, selection: result.selection };
+    }
+    setModal({ type: 'source', source, ...(citation ? { quote: citation.quote, revision: citation.revision, citation } : {}), resume: { at: Math.max(0, Number(offset) || 0), sectionOffset: 0, scrollTop: 0, progress: 0, nonce: Date.now() } });
+  }, [call, notify, refs, setModal]);
 
   // After an arrival, the heading (or the control the learner came from) takes focus.
   const focusRequest = lib.state.focusRequest;

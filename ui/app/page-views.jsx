@@ -5,7 +5,7 @@ import { pageFlag } from '../pages.js';
 import { exportAppearance, importAppearance } from '../appearance-prefs.js';
 import { normalizeScienceSettings } from '../science-settings.js';
 import { parseDraft } from '../draft-editor.js';
-import { Skeleton, Workflows, Graph, AudioDashboard, BlogNotes, TaskConsole } from '../workspace-views.jsx';
+import { Skeleton, Workflows, Graph, Knowledge, AudioDashboard, BlogNotes, TaskConsole } from '../workspace-views.jsx';
 import { materialOpener, resultOpener } from '../tasks/task-actions.js';
 import StudyMap from '../StudyMap.jsx';
 import Welcome, { SampleBanner } from '../Welcome.jsx';
@@ -370,7 +370,12 @@ function NotesView() {
 }
 
 /** The component of each page that shows through <PageView>. Board and live class are drawn by the shell itself (they keep running or load without a snapshot). */
+function KnowledgeView() {
+  const { nav, learn, data } = useApp();
+  return <Knowledge key={data.root} openSource={evidence => learn.openSourceAt(evidence.sourceId, evidence.start, evidence)} openTasks={() => nav.navigate('tasks')} />;
+}
 export const PAGE_VIEWS = {
+  knowledge: KnowledgeView,
   library: LibraryView, workflows: WorkflowsView, skeleton: SkeletonView, dashboard: DashboardView, exam: ExamView, wrongbook: WrongBookView, graph: GraphView,
   manage: ManageView, sources: SourcesView, audio: AudioView, tasks: TasksView, generate: GenerateView, draft: DraftView, settings: SettingsView, review: ReviewView, notes: NotesView,
   examprep: ExamPrepView, outline: OutlineView, book: BookView,

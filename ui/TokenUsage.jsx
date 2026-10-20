@@ -75,7 +75,7 @@ export function TokenEstimateView({ state = { status: 'idle' }, defaultOpen = fa
     {state.status === 'loading' && <p className="token-estimate__line token-estimate__line--loading">
       <span className="token-estimate__text">
         <span className="token-estimate__ghost" aria-hidden="true">{estimateSummary(GHOST_ESTIMATE)}</span>
-        <small className="token-estimate__quiet">{ui('正在估算…')}</small>
+        <span className="token-estimate__quiet">{ui('正在估算…')}</span>
       </span>
       <IconButton icon="info" size="sm" className="token-estimate__info token-estimate__info--slot" label={ui('查看估算明细')} aria-hidden="true" tabIndex={-1} disabled />
     </p>}

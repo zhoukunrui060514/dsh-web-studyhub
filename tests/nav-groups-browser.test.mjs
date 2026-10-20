@@ -11,9 +11,9 @@ import { startNavServer } from '../scripts/qa/nav-layout.mjs';
 /* The grouped sidebar in a real browser: every page is still reachable through its anchor, a folded group hides only its
    own rows and is still folded after a reload, the rows above and below keep their height, and a keyboard move stays inside
    the group. Needs a Chromium; without one the test says so instead of passing silently. */
-const PAGES = ['library', 'wrongbook', 'workflows', 'notes', 'board', 'exam', 'dashboard', 'sources', 'generate', 'tasks', 'skeleton', 'audio', 'live', 'examprep', 'book'];
+const PAGES = ['library', 'wrongbook', 'workflows', 'notes', 'board', 'exam', 'dashboard', 'sources', 'knowledge', 'generate', 'tasks', 'skeleton', 'audio', 'live', 'examprep', 'book'];
 
-test('the grouped sidebar: all fifteen pages reachable, folding remembered, keyboard reorder inside a group', { timeout: 300000 }, async (t) => {
+test('the grouped sidebar: all sixteen pages reachable, folding remembered, keyboard reorder inside a group', { timeout: 300000 }, async (t) => {
   let browser;
   try { browser = await launchChromium(); } catch (error) { t.skip(`no Chromium to measure with: ${String(error.message).split('\n')[0]}`); return; }
   const dist = await mkdtemp(join(tmpdir(), 'study-groups-dist-'));
@@ -43,7 +43,9 @@ test('the grouped sidebar: all fifteen pages reachable, folding remembered, keyb
     assert.equal(before.daily.expanded, null, 'the daily group is a heading, not a button');
     assert.ok(Object.values(before).every((group) => group.open === 'true' && group.shown === group.ids.length), 'everything is open at first');
 
-    const top = (id) => page.locator(`[data-nav-id="${id}"]`).evaluate((row) => row.getBoundingClientRect().top);
+    // Clicking a lower group can scroll the nav to reveal its focused header.
+    // Folding must preserve the rows' layout offsets within that scroller.
+    const top = (id) => page.locator(`[data-nav-id="${id}"]`).evaluate((row) => row.offsetTop);
     const rowsAbove = await Promise.all(['library', 'board', 'exam'].map(top));
     await page.locator('#nav-group-setup-label').click();
     await page.waitForTimeout(300);
@@ -68,11 +70,11 @@ test('the grouped sidebar: all fifteen pages reachable, folding remembered, keyb
     await page.locator('[data-nav-id="board"]').focus();
     await page.keyboard.press('Alt+ArrowDown');
     await page.waitForTimeout(200);
-    assert.deepEqual((await state()).daily.ids, ['library', 'sources', 'generate', 'tasks', 'wrongbook', 'workflows', 'notes', 'board']);
+    assert.deepEqual((await state()).daily.ids, ['library', 'sources', 'knowledge', 'generate', 'tasks', 'wrongbook', 'workflows', 'notes', 'board']);
     await page.locator('[data-nav-id="board"]').focus();
     await page.keyboard.press('Alt+ArrowUp');
     await page.waitForTimeout(300);
-    assert.deepEqual((await state()).daily.ids, ['library', 'sources', 'generate', 'tasks', 'wrongbook', 'workflows', 'board', 'notes']);
+    assert.deepEqual((await state()).daily.ids, ['library', 'sources', 'knowledge', 'generate', 'tasks', 'wrongbook', 'workflows', 'board', 'notes']);
     assert.deepEqual(errors, []);
   } finally {
     await context.close().catch(() => {});

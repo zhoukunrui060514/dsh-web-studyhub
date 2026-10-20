@@ -20,6 +20,7 @@
     "./service": "./lib/service.js",
     "./plugins/runtime": "./lib/plugins/runtime.js",
     "./plugins/materials": "./lib/plugins/materials.js",
+    "./plugins/knowledge": "./lib/plugins/knowledge.js",
     "./plugins/bank": "./lib/plugins/bank.js",
     "./plugins/study": "./lib/plugins/study.js",
     "./plugins/generation": "./lib/plugins/generation.js",
@@ -31,6 +32,8 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "docs/knowledge-graph.md",
+    "docs/knowledge-graph.zh-CN.md",
     "lib",
     "skills",
     "scripts/prepare.mjs",
@@ -133,6 +136,7 @@
     }
   },
   "scripts": {
+    "qa:knowledge": "node scripts/qa/knowledge-dsh.mjs",
     "build": "node scripts/build.mjs",
     "prepare": "node scripts/prepare.mjs",
     "build:demo": "node scripts/build-demo.mjs",

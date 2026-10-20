@@ -33,7 +33,7 @@ const readRow = (page) => page.evaluate(() => {
     return { key: control.dataset.control, box: box(control), label: box(label), labelCut: label ? label.scrollWidth > label.clientWidth + 1 : false, widget: box(widget),
       value: control.querySelector('.sh-select__value')?.textContent.trim() ?? null, valueCut: (() => { const v = control.querySelector('.sh-select__value'); return v ? v.scrollWidth > v.clientWidth + 1 : false; })() };
   });
-  return { viewport: innerWidth, scrollWidth: document.documentElement.scrollWidth, row: box(row), rowOverflow: row.scrollWidth > row.clientWidth + 1, controls,
+  return { viewport: innerWidth, scrollWidth: document.documentElement.scrollWidth, row: box(row), rowOffset: row.offsetTop, rowOverflow: row.scrollWidth > row.clientWidth + 1, controls,
     bar: [...row.querySelector('.tc-controls__bar').children].map((child) => ({ cls: child.className, ...box(child) })), status: row.querySelector('.tc-controls__applied').textContent.trim() };
 });
 
@@ -110,7 +110,9 @@ test('the follow-session select reads clearly and the 即时控制 row holds tog
         judge({ ...changed, controls: changed.controls.map((c) => c.key === 'effortPlanning' ? { ...c, value: words.short } : c) }, `${where} after a change`, words);
         assert.equal(changed.controls.find((c) => c.key === 'effortPlanning').value, words.lowest, `${where}: the select says the level chosen`);
         assert.equal(changed.row.height, first.row.height, `${where}: the row keeps its height when a change is applied (${first.row.height} -> ${changed.row.height})`);
-        assert.equal(changed.row.top, first.row.top, `${where}: and its place`);
+        // Browser focus may scroll the app to reveal the selected trigger.
+        // Compare its layout position, independently of that viewport scroll.
+        assert.equal(changed.rowOffset, first.rowOffset, `${where}: and its place`);
         await planning.focus();
         await page.waitForTimeout(450);
         assert.equal(await page.locator('.sh-tooltip:popover-open').count(), 0, `${where}: no tooltip while a level is chosen`);
@@ -121,6 +123,10 @@ test('the follow-session select reads clearly and the 即时控制 row holds tog
         await page.locator('.sh-pop__popup:not([data-closed]) .sh-opt').nth(0).click();
         await until(async () => (await planning.innerText()).trim() === words.short, 'the select to follow the session again');
         await page.locator('.sh-pop__popup[data-closed]').first().waitFor({ state: 'attached' }).catch(() => {});
+        // Finish the pointer interaction before testing a new keyboard focus. A
+        // late pointerleave from the closing popup would otherwise hide the tip.
+        await page.mouse.move(0, 0);
+        await page.waitForTimeout(300);
         await planning.blur();
         await planning.focus();
         await until(async () => (await page.locator('.sh-tooltip:popover-open').count()) === 1, 'the tooltip on focus');

@@ -266,3 +266,5 @@ Interested in contributing code, testing, improving documentation or sharing fee
 Report a bug or ask a question in [GitHub Issues](https://github.com/EricWang1358/dsh-web-studyhub/issues).
 
 MIT License; see [LICENSE](LICENSE). The learning-quality and scheduling references are in [`references/`](references/).
+
+Material knowledge graph: [build, explore evidence and ask about paths](docs/knowledge-graph.md).

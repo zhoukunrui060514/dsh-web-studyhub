@@ -12,6 +12,9 @@
     - id: study-suite-bank
       name: '@ericwang1358/dsh-daily-flashcard/plugins/bank'
       config: {}
+    - id: study-suite-knowledge
+      name: '@ericwang1358/dsh-daily-flashcard/plugins/knowledge'
+      config: {}
     - id: study-suite-learning
       name: '@ericwang1358/dsh-daily-flashcard/plugins/study'
       config:

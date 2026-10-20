@@ -56,7 +56,7 @@ test('availability reads the registry and matches the table it replaced', () => 
     library: ['bank', 'study'], manage: ['bank'], review: ['bank', 'study'], wrongbook: ['bank', 'study'],
     exam: ['bank', 'study'], dashboard: ['bank', 'study'], graph: ['bank', 'study'],
     generate: ['materials', 'bank', 'authoring', 'generation'], draft: ['bank', 'authoring'],
-    sources: ['materials'], audio: ['audio'], live: ['audio', 'recording'],
+    knowledge: ['knowledge'], sources: ['materials'], audio: ['audio'], live: ['audio', 'recording'],
     workflows: ['workflows', 'bank', 'study'], skeleton: ['skeleton'], notes: ['notes'],
     examprep: ['materials', 'generation'], // added later, behind a host switch (pages.js `flag`)
     outline: ['bank', 'study', 'materials'], // added later: the 总纲 page, reached from the home's course area

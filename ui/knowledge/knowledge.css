@@ -1,0 +1,53 @@
+@layer study.reset, study.tokens, study.components, study.features, study.overrides;
+
+@layer study.features {
+  :is(.study-app, .study-seat) {
+    .knowledge-page { min-width: 0; }
+    .knowledge-filters, .knowledge-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2-5);
+      align-items: center;
+    }
+    .knowledge-field { display: grid; gap: var(--space-1); min-width: 0; }
+    .knowledge-select { max-width: 240px; min-height: 65px; }
+    .knowledge-input { max-width: 100%; }
+    .knowledge-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+    .knowledge-workspace:has(.knowledge-details) { grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); }
+    .knowledge-canvas {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-surface);
+      color: var(--text);
+    }
+    .knowledge-canvas > .knowledge-toolbar { padding: var(--space-2-5); }
+    .knowledge-canvas svg { display: block; width: 100%; }
+    .knowledge-canvas > svg { min-height: 300px; touch-action: none; }
+    .knowledge-canvas circle { fill: var(--accent); stroke: var(--bg-surface); stroke-width: 3; }
+    .knowledge-canvas text { fill: currentColor; font-size: var(--fs-sm); pointer-events: none; }
+    .knowledge-canvas g[role=button] { cursor: pointer; }
+    .knowledge-canvas line { opacity: .45; }
+    .knowledge-details {
+      padding: var(--space-4);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .knowledge-list-item { display: block; margin: var(--space-1-5); max-width: 100%; text-align: left; }
+    .knowledge-quote { margin: var(--space-2-5) 0; padding: var(--space-2-5); border-left: 3px solid var(--accent); white-space: pre-wrap; }
+    .knowledge-textarea { width: 100%; box-sizing: border-box; min-height: 90px; }
+    .knowledge-message { white-space: pre-wrap; padding: var(--space-3) 0; border-bottom: 1px solid var(--line); }
+    .knowledge-path { padding: var(--space-2-5) 0; }
+    .knowledge-path-step { margin: var(--space-1); }
+    @media (max-width: 800px) {
+      .knowledge-workspace:has(.knowledge-details) { grid-template-columns: minmax(0, 1fr); }
+      .knowledge-filters { align-items: stretch; }
+      .knowledge-field { flex: 1 1 130px; }
+      .knowledge-select { width: 100%; max-width: 100%; }
+      .knowledge-canvas > svg { min-height: 240px; }
+      .knowledge-page { padding-left: var(--space-2-5); padding-right: var(--space-2-5); }
+    }
+  }
+}

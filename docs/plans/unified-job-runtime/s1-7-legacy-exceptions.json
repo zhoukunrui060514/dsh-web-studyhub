@@ -23,7 +23,8 @@
     "lib/contexts/generation/outline/jobs/course-outline-build.js",
     "lib/contexts/generation/book/jobs/course-book-build.js",
     "lib/contexts/generation/book-ai/jobs/course-book-ai.js",
-    "lib/contexts/generation/answer-card/jobs/case-answer-card.js"
+    "lib/contexts/generation/answer-card/jobs/case-answer-card.js",
+    "lib/contexts/knowledge/jobs/extract.js"
   ],
   "entries": [
     {
@@ -895,6 +896,27 @@
           "switches": [
             "workflow"
           ]
+        }
+      ]
+    },
+    {
+      "file": "lib/contexts/knowledge/qa.js",
+      "calls": [
+        {
+          "callee": "ports.complete",
+          "count": 1
+        }
+      ],
+      "owner": "knowledge context maintainer",
+      "reason": "Foreground knowledge question uses the instant metered port; extraction uses a managed Job gateway.",
+      "removeAt": "retained",
+      "evidence": "tests/knowledge-qa.test.mjs; tests/knowledge-jobs.test.mjs; s6-0-coverage.md",
+      "sites": [
+        {
+          "what": "ports.complete for one evidence-grounded foreground answer (knowledge.ask)",
+          "disposition": "exception",
+          "kind": "foreground-request",
+          "reached": true
         }
       ]
     }

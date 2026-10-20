@@ -266,3 +266,5 @@ npm run release:pack   # 全部发布包和 SHA256SUMS-<版本号>.txt，输出�
 遇到问题或有建议，请在 [GitHub Issues](https://github.com/EricWang1358/dsh-web-studyhub/issues) 提出。
 
 MIT License，见 [LICENSE](LICENSE)。沿用的学习质量、复习调度和数据结构参考资料在 [`references/`](references/)。
+
+资料知识图谱：[构建、证据探索与链路问答](docs/knowledge-graph.zh-CN.md)。
