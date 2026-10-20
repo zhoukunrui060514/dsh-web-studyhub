@@ -17,7 +17,7 @@ const user = (reset) => (ctx, how) => { if (how === 'user') reset(ctx); };
 export const PAGES = Object.freeze({
   library: { label: '学习库', title: '学习库', glyph: 'library', group: 'daily', needs: ['bank', 'study'] },
   sources: { label: '资料', title: '资料', glyph: 'sources', group: 'daily', needs: ['materials'] },
-  knowledge: { label: '知识图谱', title: '知识图谱', glyph: 'skeleton', group: 'daily', needs: ['knowledge'] },
+  knowledge: { label: '知识图谱', title: '知识图谱', glyph: 'skeleton', group: 'daily', needs: ['knowledge'], flag: 'knowledgeGraph' },
   generate: { label: '创建题组', title: '创建题组', glyph: 'generate', group: 'daily', needs: ['materials', 'bank', 'authoring', 'generation'] },
   tasks: { label: '任务', title: '任务', glyph: 'tasks', group: 'daily', needs: [] },
   wrongbook: { label: '错题与待巩固', title: '错题与待巩固', glyph: 'wrongbook', group: 'daily', needs: ['bank', 'study'] },

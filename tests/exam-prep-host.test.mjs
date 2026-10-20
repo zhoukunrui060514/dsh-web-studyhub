@@ -27,12 +27,13 @@ async function snapshot(t, pilot, learner) {
 
 test('the snapshot says the page is on by default, off when the learner turned it off, and on again when the host forces it', async t => {
   const off = { enabled: false };
-  assert.deepEqual((await snapshot(t)).features, { examBlueprint: true, examBlueprintByHost: false });
-  assert.deepEqual((await snapshot(t, undefined, off)).features, { examBlueprint: false, examBlueprintByHost: false });
-  assert.deepEqual((await snapshot(t, { examBlueprint: false }, off)).features, { examBlueprint: false, examBlueprintByHost: false });
-  assert.deepEqual((await snapshot(t, { examBlueprint: true }, off)).features, { examBlueprint: true, examBlueprintByHost: true }, 'the host switch forces it on');
-  assert.deepEqual((await snapshot(t, { examBlueprint: 'true' }, off)).features, { examBlueprint: false, examBlueprintByHost: false }, 'only a literal true');
-  assert.deepEqual((await snapshot(t, { audioSingle: true }, off)).features, { examBlueprint: false, examBlueprintByHost: false }, 'another switch does not turn it on');
+  assert.deepEqual((await snapshot(t)).features, { examBlueprint: true, examBlueprintByHost: false, knowledgeGraph: false });
+  assert.deepEqual((await snapshot(t, undefined, off)).features, { examBlueprint: false, examBlueprintByHost: false, knowledgeGraph: false });
+  assert.deepEqual((await snapshot(t, { examBlueprint: false }, off)).features, { examBlueprint: false, examBlueprintByHost: false, knowledgeGraph: false });
+  assert.deepEqual((await snapshot(t, { examBlueprint: true }, off)).features, { examBlueprint: true, examBlueprintByHost: true, knowledgeGraph: false }, 'the host switch forces it on');
+  assert.deepEqual((await snapshot(t, { examBlueprint: 'true' }, off)).features, { examBlueprint: false, examBlueprintByHost: false, knowledgeGraph: false }, 'only a literal true');
+  assert.equal((await snapshot(t, { knowledgeGraph: true }, off)).features.knowledgeGraph, true, 'the host switch shows the knowledge graph page');
+  assert.deepEqual((await snapshot(t, { audioSingle: true }, off)).features, { examBlueprint: false, examBlueprintByHost: false, knowledgeGraph: false }, 'another switch does not turn it on');
 });
 
 test('the snapshot carries the lists as summaries, never as sources, and the page has its renderer', async t => {
