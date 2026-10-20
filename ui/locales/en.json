@@ -1,4 +1,8 @@
 {
+  "关系网络": "Relationship network",
+  "局部关系": "Local relationships",
+  "聚焦概念": "Focus concept",
+  "滚轮缩放 · 拖动节点 · 双击聚焦": "Scroll to zoom · Drag nodes · Double-click to focus",
   "拖动浏览，选择概念查看证据": "Drag to explore; select a concept for evidence",
   "筛选与构建设置": "Filters and build settings",
   "概念与证据": "Concepts and evidence",

@@ -13,7 +13,7 @@ try {
   await previewCall(server, 'source.get', { id: 'kg-repeated' }).catch(() => previewCall(server, 'source.add', { id: 'kg-repeated', title: '重复引文定位验收', text: repeatedText }));
   const actualMaterials = await previewCall(server, 'knowledge.materials');
   const repeatedMaterial = actualMaterials.materials.find(m => m.identity === 'source:kg-repeated');
-  let actualEvidence = false;
+  let actualEvidence = false, lastQuery = {};
   const exactCitation = { id: 'exact', materialIdentity: repeatedMaterial.identity, revision: repeatedMaterial.revision, sourceId: 'kg-repeated', quote: '相同引文', start: repeatedText.lastIndexOf('相同引文'), end: repeatedText.lastIndexOf('相同引文') + 4, assertion: 'asserted' };
   browser = await launchChromium(); const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const nodes = Array.from({ length: 300 }, (_, i) => ({ id: `n${i}`, label: `概念${i}`, definition: `定义${i}` }));
@@ -21,8 +21,8 @@ try {
   const citation = { id: 'ev', materialIdentity: 'source:x', sourceId: 'x', revision: 'old', quote: '资料原文', assertion: 'inferred', start: 0, end: 4, status: 'stale' };
   const messages = [], sleep = ms => new Promise(done => setTimeout(done, ms));
   await page.route('**/api/call', async route => {
-    const { action } = route.request().postDataJSON(); let value;
-    if (action === 'knowledge.query') value = { graphRevision: 'fixture', nodes, edges, displayed: { nodes: 300, edges: 1 }, totals: { nodes: 301, edges: 1 } };
+    const { action, args } = route.request().postDataJSON(); let value;
+    if (action === 'knowledge.query') { lastQuery = args; value = { graphRevision: 'fixture', nodes, edges, displayed: { nodes: 300, edges: 1 }, totals: { nodes: 301, edges: 1 } }; }
     else if (action === 'knowledge.materials') value = actualEvidence ? actualMaterials : { materials: [], courses: [] };
     else if (action === 'knowledge.settings.get') value = { autoBuild: false };
     else if (action === 'knowledge.node.get') value = { item: nodes[0], evidence: [actualEvidence ? exactCitation : citation], versionStatus: actualEvidence ? 'current' : 'stale' };
@@ -36,23 +36,44 @@ try {
   await page.getByRole('button', { name: '知识图谱', exact: true }).click();
   await page.getByRole('button', { name: '构建／更新', exact: true }).waitFor();
   await page.getByText('当前显示 300 / 总计 301', { exact: false }).waitFor();
+  await page.locator('.knowledge-canvas[data-settled="true"]').waitFor();
   for (const width of [1440, 645, 390, 720]) {
     await page.setViewportSize({ width, height: width === 720 ? 450 : 900 });
     await page.waitForFunction(() => {
       const svg = document.querySelector('.knowledge-viewport svg');
       return Math.abs(svg.getBoundingClientRect().width - svg.viewBox.baseVal.width) < 2;
     });
-    const dimensions = await page.locator('.knowledge-node text').first().evaluate(e => ({ height: e.getBoundingClientRect().height, font: parseFloat(window.getComputedStyle(e).fontSize) }));
-    assert.ok(dimensions.font >= 14 && dimensions.height >= 13, `readable graph labels at ${width}`);
+    await page.locator('[data-node-id="n0"]').focus();
+    const dimensions = await page.locator('[data-node-id="n0"] text').evaluate(e => ({ height: e.getBoundingClientRect().height }));
+    assert.ok(dimensions.height >= 13, `readable screen-space graph labels at ${width}`);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `no overflow at ${width}`);
   }
   await page.setViewportSize({ width: 1440, height: 900 });
+  // Real pointer drag moves view coordinates without selecting or changing semantic data.
+  await page.getByRole('button', { name: '适应全图', exact: true }).click();
+  await page.locator('[data-node-id="n0"]').dblclick();
+  await page.waitForFunction(() => ![...document.querySelectorAll('button')].find(b => b.textContent === '继续展开')?.disabled);
+  assert.equal(lastQuery.focusId, 'n0', 'double click requests a local graph before the camera can move');
+  await page.getByRole('button', { name: '全局视图', exact: true }).click();
+  await page.locator('.knowledge-canvas[data-settled="true"]').waitFor();
+  const dot = page.locator('[data-node-id="n0"] .knowledge-node-dot'), start = await dot.boundingBox();
+  const before = await page.locator('[data-node-id="n0"]').getAttribute('transform');
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  await page.mouse.down(); await page.mouse.move(start.x + 70, start.y + 35, { steps: 8 }); await page.mouse.up();
+  await page.locator('.knowledge-canvas[data-settled="true"]').waitFor();
+  assert.notEqual(await page.locator('[data-node-id="n0"]').getAttribute('transform'), before);
+  assert.equal(await page.locator('.knowledge-details').count(), 0, 'drag does not open details');
+  const zoomBefore = await page.locator('.knowledge-zoom').innerText();
+  await page.mouse.wheel(0, -120);
+  await page.waitForFunction(value => document.querySelector('.knowledge-zoom').textContent !== value, zoomBefore);
+  await page.getByRole('button', { name: '适应全图', exact: true }).click();
   assert.equal(await page.locator('.knowledge-filters-panel').getAttribute('open'), null);
   await page.locator('.knowledge-filters-panel > summary').click();
   await page.getByRole('listbox', { name: '资料', exact: true }).waitFor();
   await page.locator('.knowledge-filters-panel > summary').click();
   await page.getByRole('button', { name: '放大', exact: true }).click();
   await page.getByRole('button', { name: '概念0', exact: true }).first().click();
+  assert.equal(await page.locator('.knowledge-node').count(), 300, 'single selection retains global context');
   await page.getByText('依据旧版本', { exact: true }).first().waitFor();
   await page.getByRole('button', { name: '针对当前内容提问' }).click();
   await page.getByRole('textbox', { name: '问题', exact: true }).fill('为何不能将反向查看当成因果方向？');
@@ -73,6 +94,7 @@ try {
   });
   assert.ok(narrowPanels.detailsTop >= narrowPanels.canvasBottom, 'narrow evidence panel does not cover the graph');
   await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('button', { name: '聚焦概念', exact: true }).click();
   await page.getByRole('button', { name: '从这里选择链路' }).click();
   await page.locator('svg g[role="button"]').filter({ has: page.locator('line') }).first().dispatchEvent('click');
   await page.getByText('按顺序选择链路 (1/12)', { exact: true }).waitFor();

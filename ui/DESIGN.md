@@ -1,5 +1,11 @@
 # Study panel design (1.0)
 
+## Material knowledge graph network
+
+The material knowledge graph uses an open dot-and-link canvas, following the user's Obsidian reference. Real connected components form loose clusters; node size reflects visible relation count, while isolated concepts stay quieter and remain selectable. Do not fabricate links to imitate a denser reference. Overview labels are chosen at reading size with collision avoidance rather than scaling all names down.
+
+Use existing text, canvas and control tokens. Cinnabar is also the selected concept/relationship signal within this graph. Single selection preserves the surrounding graph and opens evidence; double selection or the focus action requests the local neighborhood. Dragging changes view coordinates only. Movement settles, and reduced-motion mode skips animated simulation, camera travel and pan inertia. Narrow screens hide the duplicate page heading and desktop mouse hint, keep a compact scale/zoom toolbar, and place a short local graph above evidence. This network-specific interaction supersedes the older structural-axis preference for this page only.
+
 ## Daily learning action hub
 
 Mode: directed by the existing ink-on-desk system. Returning learners should see what to do next and their remaining daily allowance within five seconds. The primary object is the next action, not a dashboard of tasks or a negotiation form.
