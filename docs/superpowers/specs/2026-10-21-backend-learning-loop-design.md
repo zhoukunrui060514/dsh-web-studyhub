@@ -1,7 +1,7 @@
 # StudyHub 后端重组方案：以五个空间贯通学习闭环
 
 日期：2026-10-21（Asia/Shanghai）
-状态：**用户已认可闭环并批准开始开发；B0、B1 已实施，B2–B7 待推进。**
+状态：**用户已认可闭环并批准开始开发；B0–B2 已实施，B3–B7 连续推进，无需逐阶段审批。**
 目标工作区：`D:\Codex\workspaces\Study\studyhub-redesign`
 检查基线：分支 `redesign/five-spaces`，HEAD `caf7eb3b`，另有未提交的 S1 接续改动。
 
