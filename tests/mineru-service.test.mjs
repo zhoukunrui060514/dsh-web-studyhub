@@ -110,7 +110,7 @@ test('a PDF that cannot be read is refused in plain words and nothing runs', asy
 });
 
 test('without the materials component there is nowhere to save the result, so nothing runs', async t => {
-  const h = await harness(t, { contexts: ['audio'] });
+  const h = await harness(t, { contexts: ['conversion'] });
   const uploadId = await h.upload(await makePdf({ pages: 3 }));
   await assert.rejects(h.call('mineru.import', { uploadId }), /资料组件/);
   assert.deepEqual(await h.parses(), []);

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { prepareJob, saveManifest } from '../lib/mineru-job.js';
 import { closeRecord, openRecord } from '../lib/mineru-history.js';
 import { localizeAppMessage } from '../lib/application-messages.js';
-import { CONVERT_TEXT } from '../lib/contexts/audio/convert-support.js';
+import { CONVERT_TEXT } from '../lib/contexts/conversion/convert-support.js';
 import { MINERU_INSTALL_MESSAGES } from '../lib/mineru-install-text.js';
 import { assistantRefusal } from '../lib/assistant-boundary.js';
 import { harness } from './helpers/pdf-convert-harness.mjs';

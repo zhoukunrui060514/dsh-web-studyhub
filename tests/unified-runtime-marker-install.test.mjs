@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { stat } from 'node:fs/promises';
 import { INSTALL_MESSAGES, MARKER_INSTALL, markerInstallStatePath, venvLayout } from '../lib/marker-install.js';
 import { INSTALL_JOB_TEXT } from '../lib/marker-install-text.js';
-import { observeLocalWith } from '../lib/contexts/audio/local-process-job.js';
+import { observeLocalWith } from '../lib/contexts/conversion/local-process-job.js';
 import { localizeAppMessage } from '../lib/application-messages.js';
 import { until } from './helpers/wait.mjs';
 import { INSTALL_KIND, harness } from './helpers/marker-install-harness.mjs';

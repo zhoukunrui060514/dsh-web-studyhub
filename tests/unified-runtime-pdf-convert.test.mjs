@@ -4,7 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { StudyService } from '../lib/service.js';
 import { convertHome } from '../lib/mineru-job.js';
-import { CONVERT_TEXT } from '../lib/contexts/audio/convert-support.js';
+import { CONVERT_TEXT } from '../lib/contexts/conversion/convert-support.js';
 import { makePdf } from './helpers/pdf.mjs';
 import { managedRuntimeOptions } from './helpers/runtime-switch.mjs';
 import { until } from './helpers/wait.mjs';

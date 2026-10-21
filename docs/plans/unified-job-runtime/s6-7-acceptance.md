@@ -1,5 +1,7 @@
 # S6-7：统一运行时 alpha 总验收
 
+2026-10-22 维护补记：当前源码的 **25 个迁移开关**全部默认关闭（包含后增的 knowledgeGraph）。下文 2026-10-07 的 24 个数量与门禁保留为当时记录。转换模块的清单路径已随 B5 从 audio 更新至 conversion，不表示重跑或改写旧发布证据。
+
 核验日期：2026-10-07。分支 `codex/runtime-s67-acceptance`，基于 main `82478c27`（含 #355–#358；核验时没有未合并的 PR）。工作包文本见 [U42](sprints-2-6.md#u42-s6-7)；前序：[S6-0 覆盖复核](s6-0-coverage.md)、[S6-1 兼容核对](s6-1-compat.md)、[S6-2 只删无使用者的代码](s6-2-dead-only.md)、[S6-3 边界护栏](s6-3-boundaries.md)、[S6-4 新增任务的最小接入证明](s6-4-minimal-integration.md)、[S6-5 控制台矩阵（音频与 PDF 一侧）](s6-5-audio-console.md)与[即时请求入口](s6-5a-instant.md)、[S6-6 最终读兼容与回退](s6-6-rollback.md)。
 
 **这份文件声明什么，不声明什么。** 它把 P1–P6 实际合并的 PR 和 SHA、剩余的旁路例外、不支持的能力和保留的历史 reader、证据入口放在一处，并记录合并前完整 `npm run verify` 的结果。它**没有**声明：任何 alpha 版本号、tag、GitHub 发布或"某个 commit 是 alpha"——这些需要所有者授权，见 §8（待定门禁）。24 个迁移开关**全部默认关闭**，关闭时一切与 2.7.1 相同（这是回退本身）；默认值没有翻转。不替正式 main 声明完成。
@@ -162,8 +164,8 @@ R 的定义见 [sprints-2-6.md 的 Requirements](sprints-2-6.md#requirements)。
 
 | 文件 | 负责人 | 类别 | 理由 | 移除时点 |
 |---|---|---|---|---|
-| `lib/contexts/audio/convert.js` | audio family (lane A/D) | 旧路径（开关关时的默认）（删除待默认值翻转）；历史读取适配 | startConvertJob: the original conversion run (job record, retry entry, cancel controller) | after default flip |
-| `lib/contexts/audio/install-row.js` | non-model family (lane D) | 旧路径（开关关时的默认）（删除待默认值翻转） | the console row (type local-install) of the original install run (MinerU, Marker), with its cancel controller | after default flip |
+| `lib/contexts/conversion/convert.js` | audio family (lane A/D) | 旧路径（开关关时的默认）（删除待默认值翻转）；历史读取适配 | startConvertJob: the original conversion run (job record, retry entry, cancel controller) | after default flip |
+| `lib/contexts/conversion/install-row.js` | non-model family (lane D) | 旧路径（开关关时的默认）（删除待默认值翻转） | the console row (type local-install) of the original install run (MinerU, Marker), with its cancel controller | after default flip |
 | `lib/contexts/audio/operations.js` | audio family (lane A) | 会话子系统；旧路径（开关关时的默认）（删除待默认值翻转） | live.start: the live class session (a connection with its own lifecycle; its correction and its save are the jobs) | after default flip |
 | `lib/contexts/audio/worker.js` | audio family (lane A) | 旧路径（开关关时的默认）（删除待默认值翻转）；历史读取适配 | startAudioJob: the original audio runner. With the five audio switches on (audioLiveSave included, S2-6) nothing calls it | after default flip |
 | `lib/contexts/coach/worker.js` | coach family (lane C) | 领域自己的结构（缓存/队列/单飞）；旧路径（开关关时的默认）（删除待默认值翻转） | coachTask: the library lane that queues a prep batch (its body is a Job when coach is on) and runs a card rewrite | after default flip |

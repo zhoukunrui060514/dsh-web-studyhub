@@ -14,7 +14,7 @@ import { markerInstallStatePath, venvLayout } from '../lib/marker-install.js';
 import { readMarkerSettings } from '../lib/marker-settings.js';
 import { sourceKey } from '../lib/retrieval-index.js';
 import { mkdir, stat, writeFile } from 'node:fs/promises';
-import { announceEnd } from '../lib/contexts/audio/convert-card.js';
+import { announceEnd } from '../lib/contexts/conversion/convert-card.js';
 import { dirname, join } from 'node:path';
 
 /* S5-6: the unknown-side-effect and stop/recovery matrix of the non-model paths (docs/plans/unified-job-runtime/s5-6-recovery-matrix.md).

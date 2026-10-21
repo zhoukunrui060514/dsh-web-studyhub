@@ -6,10 +6,10 @@
     "lib/contexts/audio/jobs/live-save.js",
     "lib/contexts/audio/jobs/live-correction.js",
     "lib/contexts/audio/jobs/review.js",
-    "lib/contexts/audio/install/install-job.js",
+    "lib/contexts/conversion/install/install-job.js",
     "lib/contexts/audio/jobs/single-import.js",
     "lib/contexts/audio/jobs/subtitles.js",
-    "lib/contexts/audio/pdf/pdf-convert-job.js",
+    "lib/contexts/conversion/pdf/pdf-convert-job.js",
     "lib/contexts/coach/jobs/coach-prep.js",
     "lib/contexts/generation/jobs/generation.js",
     "lib/contexts/generation/translation/jobs/translation.js",
@@ -923,7 +923,7 @@
   ],
   "starts": [
     {
-      "file": "lib/contexts/audio/convert.js",
+      "file": "lib/contexts/conversion/convert.js",
       "calls": [
         {
           "callee": "generationControllers.set",
@@ -970,7 +970,7 @@
       "removeAt": "after default flip"
     },
     {
-      "file": "lib/contexts/audio/install-row.js",
+      "file": "lib/contexts/conversion/install-row.js",
       "calls": [
         {
           "callee": "generationControllers.set",
@@ -1871,6 +1871,7 @@
     "not-a-job"
   ],
   "policySwitches": {
+      "knowledgeGraph": "the independent material knowledge graph introduces a new knowledge-extract Job with no legacy in-process path to bypass; the switch controls admission while existing evidence and histories remain readable",
     "examBlueprint": "the exam blueprint build is a new Job kind with no original in-process path to bypass: the switch only admits new builds (off: the operation refuses and does nothing; the blueprint material already saved stays readable)",
     "dailyRecapAgent": "the daily recap Job asks a host sub-agent when there is one instead of the direct call (gateway policy agent-preferred; falls back to direct and records why)",
     "workflowAgent": "teachings and skeletons of the learning workflow ask a host sub-agent when there is one instead of the direct call (gateway policy agent-preferred; falls back to direct and records why)"

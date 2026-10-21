@@ -5,7 +5,7 @@ import React from 'react';
 import { loadUi } from './helpers/ui-module.mjs';
 import { inApp } from './helpers/fake-app.mjs';
 
-/* A one-click install in the 任务 console (the legacy `local-install` row of lib/contexts/audio/install-row.js, shared by MinerU and Marker): the row and
+/* A one-click install in the 任务 console (the legacy `local-install` row of lib/contexts/conversion/install-row.js, shared by MinerU and Marker): the row and
    the detail say the step (第 3/6 步：安装 MinerU), the detail shows the steps and the log in place of the model-call panels (an install makes no model
    calls), and an install that was stopped is 已暂停 with 继续安装, not a crimson 删除. */
 

@@ -5,6 +5,24 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { StudyService } from '../lib/service.js';
 
+test('the due suggestion executes the existing deck review contract and queues only due cards',async t=>{
+  const root=await mkdtemp(join(tmpdir(),'today-due-'));const service=new StudyService(root);
+  t.after(async()=>{await service.dispose();await rm(root,{recursive:true,force:true});});
+  await service.store.update(s=>{
+    for(const id of ['one','two']){
+      s.decks.push({id,title:id,course:'课程',cards:[{id:`${id}-due`,kind:'quiz',topic:'主题',review:{repetitions:2,due_at:'2020-01-01T00:00:00Z'},options:[{id:'A',text:'甲',correct:true}]},{id:`${id}-future`,kind:'quiz',topic:'主题',review:{repetitions:2,due_at:'2099-01-01T00:00:00Z'},options:[{id:'A',text:'甲',correct:true}]}]});
+      s.attempts.push({id:`attempt-${id}`,deckId:id,quiz_id:`${id}-due`,grade:4,timestamp:'2020-01-01T00:00:00Z'});
+    }
+  });
+  const today=await service.call('learning.today.get');
+  const due=[today.primary,...today.secondary].find(row=>row.kind==='due-review');assert.ok(due);
+  const run=await service.call(due.action.operation,due.action.args);
+  const entries=(await service.store.read()).runs.find(item=>item.id===run.id).entries;
+  assert.ok(entries.length);assert.equal(entries.length,due.target.count);
+  assert.ok(entries.every(entry=>entry.card.id.endsWith('-due')));
+  assert.ok(entries.every(entry=>(entry.deckId??run.deckId)===due.target.deckId));
+});
+
 test('today API, snapshot and coach share one pure decision and every suggested operation exists', async t => {
   t.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-10-22T12:00:00+08:00') });
   const root = await mkdtemp(join(tmpdir(), 'today-'));

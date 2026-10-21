@@ -4,6 +4,17 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { StudyService } from '../lib/service.js';
+import { recordsQuery } from '../lib/learning-records.js';
+
+test('history projection does bounded course-index work as attempt count grows',async t=>{
+  const {service}=await fixture(t);
+  const state=await service.store.read();
+  state.attempts=Array.from({length:200},(_,i)=>({id:`a${i}`,deckId:'d',quiz_id:'q',grade:1}));
+  const courses=state.courses;let reads=0;
+  Object.defineProperty(state,'courses',{get(){reads++;return courses;},enumerable:true});
+  assert.equal(recordsQuery(state,{scope:{kind:'all'}}).total,200);
+  assert.ok(reads<10,`course collection read ${reads} times for a single query`);
+});
 
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'records-'));

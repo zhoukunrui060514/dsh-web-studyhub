@@ -11,9 +11,9 @@ import { LOCAL_MESSAGES } from '../lib/mineru-local.js';
 import { MINERU_INSTALL_JOB_TEXT, MINERU_INSTALL_MESSAGES, MINERU_STAGE_NAMES } from '../lib/mineru-install-text.js';
 import { MINERU_FAILURE_TEXT } from '../lib/mineru-install.js';
 import { PdfChunkError, inspectPdf } from '../lib/pdf-chunker.js';
-import { CONVERT_TEXT } from '../lib/contexts/audio/convert-support.js';
-import { NO_MATERIALS, stageText } from '../lib/contexts/audio/convert.js';
-import { mineruStageText } from '../lib/contexts/audio/install/mineru-install-job.js';
+import { CONVERT_TEXT } from '../lib/contexts/conversion/convert-support.js';
+import { NO_MATERIALS, stageText } from '../lib/contexts/conversion/convert.js';
+import { mineruStageText } from '../lib/contexts/conversion/install/mineru-install-job.js';
 import { makeEncryptedPdf, makePdf } from './helpers/pdf.mjs';
 
 /* PDF conversion on this computer and the one-click MinerU install: every sentence a learner can see from the server side has an English form, with its
