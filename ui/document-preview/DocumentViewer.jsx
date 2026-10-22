@@ -432,7 +432,7 @@ function DocumentReader({ source, quote, call, data, host, onOpenCard, onOpenDec
     <div className="study-document-notices reader-notices">{notices}</div>
     <div className="reader-aux">
       {quote && <blockquote className="highlight-quote"><MathText text={quote} /></blockquote>}
-      {!localMode && <AudioCorrections audio={source.audio} onReview={call && source.audio?.corrections ? () => call('audio.corrections.review', { sourceId: source.id }) : null} />}
+      {!localMode && <AudioCorrections audio={source.audio} />}
     </div>
     <div className="reader-layout" data-outline={outlineOn ? 'on' : 'off'} data-tools={toolsOn ? 'on' : 'off'}>
       {narrow && (outlineOn || toolsOn) && <button type="button" className="reader-scrim" aria-label={ui('关闭面板')} onClick={() => setOverlay(null)} />}

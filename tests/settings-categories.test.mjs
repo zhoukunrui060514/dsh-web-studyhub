@@ -10,7 +10,7 @@ const full = { audio: true, generation: true, system: true };
 test('settings categories under the three group headings, each with a plain title', () => {
   assert.deepEqual(SETTINGS_GROUPS.map(group => group.id), ['common', 'once', 'advanced']);
   assert.deepEqual(SETTINGS_CATEGORIES.map(category => category.id),
-    ['appearance', 'science', 'model', 'generation', 'daily-recap', 'practice', 'courses', 'exam-prep', 'audio', 'mineru', 'retrieval', 'profile', 'data', 'update', 'usage', 'experimental']);
+    ['appearance', 'science', 'model', 'generation', 'daily-recap', 'practice', 'courses', 'exam-prep', 'mineru', 'retrieval', 'profile', 'data', 'update', 'usage', 'experimental']);
   for (const category of SETTINGS_CATEGORIES) {
     assert.ok(SETTINGS_GROUPS.some(group => group.id === category.group), `${category.id} sits in a group`);
     assert.ok(category.title && /[㐀-鿿]/.test(category.title), `${category.id} has a Chinese title`);
@@ -32,7 +32,7 @@ test('a host without a component shows no category for it', () => {
 });
 
 test('every deep link and tour anchor lands on its category', () => {
-  const expected = { 'settings-model': 'model', 'settings-generation': 'generation', 'settings-audio': 'audio', 'settings-mineru': 'mineru', 'settings-extensions': 'retrieval', 'settings-update': 'update', 'settings-usage': 'usage', 'settings-experimental': 'experimental', 'settings-jev': 'experimental' };
+  const expected = { 'settings-model': 'model', 'settings-generation': 'generation', 'settings-mineru': 'mineru', 'settings-extensions': 'retrieval', 'settings-update': 'update', 'settings-usage': 'usage', 'settings-experimental': 'experimental', 'settings-jev': 'experimental' };
   for (const [anchor, id] of Object.entries(expected)) assert.equal(categoryForAnchor(anchor), id, anchor);
   assert.equal(categoryForAnchor('settings-generation-time'), 'generation', 'the 任务 page links to the field of the time limit (ui/tasks/time-limit.js LIMIT_ANCHOR)');
   assert.equal(categoryForAnchor('settings-nowhere'), null);

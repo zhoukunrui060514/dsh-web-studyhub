@@ -32,8 +32,6 @@ export const PAGES = Object.freeze({
   book: { label: '复习全书', title: '复习全书', glyph: 'book', group: 'periodic', needs: ['bank', 'study', 'materials'], back: '回到复习全书' },
   dashboard: { label: '统计', title: '学习统计', glyph: 'dashboard', group: 'periodic', needs: ['bank', 'study'] },
   skeleton: { label: '知识骨架', title: '知识骨架', glyph: 'skeleton', group: 'setup', needs: ['skeleton'] },
-  audio: { label: '音频转写', title: '音频转写', glyph: 'audio', group: 'setup', needs: ['audio'] },
-  live: { label: '课堂实录', title: '课堂实录', glyph: 'live', group: 'setup', needs: ['audio', 'recording'] },
   bank: { label: '题库', title: '题库', glyph: 'bank', group: null, needs: ['bank', 'study'] },
   review: { label: '复习', title: null, glyph: null, group: null, needs: ['bank', 'study'] },
   draft: { label: '草稿与发布', title: '草稿与发布', glyph: null, group: null, needs: ['bank', 'authoring'] },

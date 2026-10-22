@@ -1,5 +1,5 @@
 import { ui, uiFormat } from '../i18n.js';
-import { contractOf } from './task-model.js';
+import { contractOf, taskKindOf } from './task-model.js';
 
 /* 要求并行 (lib/job-parallel.js; docs/job-contract.md): the words the 任务 console says about the queue of question jobs, read from the contract.
    Every explainer is one plain sentence and at most one consequence line; the same words are the tooltip and (for a refusal or a job sent back) the line that stays visible. */
@@ -15,6 +15,7 @@ export function parallelOf(task) {
 
 /** Whether the header offers the button, and in which form: 'ask' (a button), 'blocked' (a button that says why it cannot), or '' (nothing). */
 export function parallelButton(task) {
+  if (taskKindOf(task) === 'audio') return '';
   const { action } = parallelOf(task);
   if (!action) return '';
   if (action.available) return 'ask';

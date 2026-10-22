@@ -163,7 +163,7 @@ function Detail({ task, data, openers, full, onFull, onDelete }) {
       <QueueNote task={task} />
       <RunLine task={task} shortfall={shortfall} now={now} onOpenSource={learn?.openSourceAt} onOpenSettings={settingsEntry?.openSettings} />
       <TimeLimit task={task} now={now} steps={steps} onPick={(id) => setFocusCall({ id, at: Date.now() })} />
-      {archived ? <ArchivedNote task={task} /> : continued ? <ContinuedNote contract={contract} /> : <ControlRow job={task} />}
+      {archived ? <ArchivedNote task={task} /> : continued ? <ContinuedNote contract={contract} /> : taskKindOf(task) === 'audio' ? null : <ControlRow job={task} />}
       {usage && <p className="tc-usage" aria-label={ui('用量')}>{usage}</p>}
       <TaskBody task={task} archived={archived} marks={marks} focusCall={focusCall} />
     </section>

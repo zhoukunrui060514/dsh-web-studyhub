@@ -14,7 +14,7 @@ export function openInboxResult({ item, result, from, fromReview }, verbs) {
   }
   if (domain === 'audio') {
     verbs.remember(from);
-    verbs.showPage(result.sourceIds?.length ? 'sources' : 'audio');
+    verbs.showPage(result.sourceIds?.length ? 'sources' : 'tasks');
     if (result.sourceIds?.length) verbs.openAudioSources(result.sourceIds);
     return;
   }

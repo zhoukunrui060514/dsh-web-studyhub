@@ -11,7 +11,7 @@ import { pageFlag } from '../pages.js';
 import { exportAppearance, importAppearance } from '../appearance-prefs.js';
 import { normalizeScienceSettings } from '../science-settings.js';
 import { parseDraft } from '../draft-editor.js';
-import { Skeleton, Workflows, Graph, Knowledge, AudioDashboard, BlogNotes, TaskConsole } from '../workspace-views.jsx';
+import { Skeleton, Workflows, Graph, Knowledge, BlogNotes, TaskConsole } from '../workspace-views.jsx';
 import { materialOpener, resultOpener } from '../tasks/task-actions.js';
 import StudyMap from '../StudyMap.jsx';
 import Welcome, { SampleBanner } from '../Welcome.jsx';
@@ -30,9 +30,7 @@ import Settings, { backupFileName } from '../Settings.jsx';
 import Generate from '../Generate.jsx';
 import Draft from '../Draft.jsx';
 import Review from '../Review.jsx';
-import AudioImport from '../AudioImport.jsx';
 import { Button, PageHeader } from '../components/index.js';
-import { openAudioSettings } from '../audio-focus.js';
 import { openIndexBuilder } from '../index-focus.js';
 import { useApp } from './app-context.js';
 import { SourceForm } from './modals/AddSourceDialog.jsx';
@@ -135,7 +133,7 @@ function DashboardView() {
   const { data, nav, intents } = useApp();
   return (
     <Dashboard data={data} onStartScope={(scope) => intents.practice(scope, { fresh: false })} onLibrary={() => nav.navigate('library')}
-      onCreate={() => intents.goGenerate()} onSources={() => nav.navigate('sources')} onAudioUsage={() => nav.navigate('audio')} />
+      onCreate={() => intents.goGenerate()} onSources={() => nav.navigate('sources')} />
   );
 }
 
@@ -178,37 +176,12 @@ function ManageView() {
 }
 
 function SourcesView() {
-  const { data, host, nav, lib, set, learn, sources, intents, settingsEntry } = useApp();
+  const { data, host, lib, set, learn, sources, intents, settingsEntry } = useApp();
   return (
     <><ProcessingPlan /><Sources key={data.root} data={data} setModal={set.setModal} sourceForm={<SourceForm />}
       highlight={lib.sourceHighlight} openAgent={host.openAgent} onOpenSources={learn.openAudioSources}
-      onLegacyRetry={(job) => { set.setLegacyAudioJobId(job.id); nav.navigate('audio'); }}
       onOpenSettings={(section) => settingsEntry.openSettings(section === 'settings-marker' ? section : 'settings-mineru')} onBuildIndex={(course) => openIndexBuilder(settingsEntry.openSettings, course)} onGenerate={sources.generateFromSources}
       onPractice={(scope) => intents.practice(scope)} /></>
-  );
-}
-
-/** The 音频转写 page's header: the shared PageHeader, its two links to neighbouring pages as quiet Buttons. */
-export function AudioHeader({ onSettings, onSources }) {
-  return (
-    <PageHeader title={ui('音频转写')} description={ui('导入录音文件，后台完成转录、校对和翻译；进度与完成通知会进入信箱。')}
-      actions={<>
-        <Button variant="quiet" onClick={onSettings}>{ui('音频设置')}</Button>
-        <Button variant="quiet" onClick={onSources}>{ui('查看资料')}</Button>
-      </>} />
-  );
-}
-
-export function AudioView() {
-  const { data, host, nav, lib, set, learn, sources } = useApp();
-  return (
-    <section className="page">
-      <AudioHeader onSettings={openAudioSettings(() => nav.navigate('settings'))} onSources={() => nav.navigate('sources')} />
-      <AudioImport data={data} canAsk={!!host.askInChat}
-        openAgent={host.openAgent} onOpenSources={learn.openAudioSources} onOpenSettings={() => nav.show.page('settings')} onGenerate={sources.generateFromSources}
-        recoveryJobId={lib.legacyAudioJobId} onRecoveryChange={set.setLegacyAudioJobId} />
-      <AudioDashboard />
-    </section>
   );
 }
 
@@ -380,7 +353,7 @@ function NotesView() {
   );
 }
 
-/** The component of each page that shows through <PageView>. Board and live class are drawn by the shell itself (they keep running or load without a snapshot). */
+/** The component of each page that shows through <PageView>. Board is drawn by the shell itself (they keep running or load without a snapshot). */
 function KnowledgeView() {
   const { nav, learn, data } = useApp();
   return <Knowledge key={data.root} openSource={evidence => learn.openSourceAt(evidence.sourceId, evidence.start, evidence)} openTasks={() => nav.navigate('tasks')} />;
@@ -389,7 +362,7 @@ export const PAGE_VIEWS = {
   records: RecordsPage,
   knowledge: KnowledgeView,
   library: TodayPage, bank: BankView, workflows: WorkflowsView, skeleton: SkeletonView, dashboard: DashboardView, exam: ExamView, wrongbook: () => <ReinforcementPage legacy={<WrongBookView />} />, graph: GraphView,
-  manage: ManageView, sources: SourcesView, audio: AudioView, tasks: () => <ActivityPage consoleView={<TasksView />} />, generate: GenerateView, draft: DraftView, settings: SettingsView, review: ReviewView, notes: NotesView,
+  manage: ManageView, sources: SourcesView, tasks: () => <ActivityPage consoleView={<TasksView />} />, generate: GenerateView, draft: DraftView, settings: SettingsView, review: ReviewView, notes: NotesView,
   examprep: ExamPrepView, outline: OutlineView, book: () => <CurriculumPage reader={<BookView />} />,
 };
 

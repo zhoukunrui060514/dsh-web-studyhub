@@ -156,10 +156,9 @@ export function JobUsage({ job }) {
 const DAY_CHOICES = [7, 30];
 
 /**
- * 模型用量 in 学习统计: the last 7 or 30 days by feature, each with the DSH rows, and a total. Audio transcription is
- * counted in minutes on its own page; a link points there instead of repeating it. `state`: { status, summary }.
+ * 模型用量 in 学习统计: the last 7 or 30 days by feature, each with the DSH rows, and a total.  `state`: { status, summary }.
  */
-export function ModelUsageView({ state = { status: 'idle' }, days = 30, onDays, onAudio }) {
+export function ModelUsageView({ state = { status: 'idle' }, days = 30, onDays }) {
   useInjectCss(css, 'study-token-usage');
   if (state.status === 'error' || state.status === 'idle') return null;
   const summary = state.status === 'ready' ? state.summary : null;
@@ -191,10 +190,6 @@ export function ModelUsageView({ state = { status: 'idle' }, days = 30, onDays, 
         <CopyButton text={lines} label={ui('复制各功能的用量')} />
       </div>
     </>}
-    <p className="model-usage__audio muted">
-      {ui('音频转写按分钟计，不在这里；见「音频转写」页的「用量与额度」。')}
-      {onAudio && <> <Button variant="link" size="sm" onClick={onAudio}>{ui('打开音频转写')}</Button></>}
-    </p>
     {instantWait(summary) && <p className="model-usage__audio muted" data-instant-wait>{instantWait(summary)}</p>}
   </Panel>;
 }
@@ -207,7 +202,7 @@ export function instantWait(summary) {
 }
 
 /** 模型用量, connected: asks `usage.summary` for the chosen window. */
-export function ModelUsage({ call, onAudio }) {
+export function ModelUsage({ call }) {
   const [days, setDays] = useState(30);
   const [state, setState] = useState({ status: 'loading' });
   const callRef = useRef(call);
@@ -219,7 +214,7 @@ export function ModelUsage({ call, onAudio }) {
       () => { if (live()) setState({ status: 'error' }); },
     );
   }, [days]);
-  return <ModelUsageView state={state} days={days} onDays={setDays} onAudio={onAudio} />;
+  return <ModelUsageView state={state} days={days} onDays={setDays} />;
 }
 
 export { joinRows };

@@ -64,6 +64,7 @@ export function autoToggle(job) {
     the closed select says the short words); absent, the option says only that. `env` (the row's, all optional): `groups` (host.modelGroups) and
     `generation` (snapshot.model) for the 模型 of a run, `efforts` (the levels of the model in force) for the levels of its stages. */
 export function controlItems(job, session, env = {}) {
+  if (taskKindOf(job) === 'audio') return [];
   const set = contractOf(job).actions.set;
   if (!set.available) return [];
   return (set.settings || []).filter((setting) => !HEADER_KEYS.has(setting.key)).flatMap((setting) => {
@@ -112,7 +113,8 @@ export function reasonText(action, name) {
 /** The action buttons of the header, from the contract: only what is available is a button. */
 export function headerActions(job) {
   const { actions } = contractOf(job);
-  return { pause: actions.pause.available, resume: actions.resume.available, cancel: actions.cancel.available, retry: actions.retry.available };
+  const retired = taskKindOf(job) === 'audio';
+  return { pause: !retired && actions.pause.available, resume: !retired && actions.resume.available, cancel: actions.cancel.available, retry: !retired && actions.retry.available };
 }
 
 /** The wording of "✓ 已生效 · 校对/翻译并发 → 4" for what a reply says is now in force. `items` (the row's controlItems) names a choice as its select does. */
@@ -165,7 +167,7 @@ export function defaultsPatch(job) {
   const items = Object.fromEntries(controlItems(job).map((item) => [item.key, item.value]));
   const pick = (keys) => Object.fromEntries(keys.filter((key) => items[key] !== undefined).map((key) => [key, items[key]]));
   switch (taskKindOf(job)) {
-    case 'audio': return { action: 'audio.settings.set', args: pick(['textConcurrency', 'transcribeConcurrency', 'proofreadReasoning', 'translateReasoning']) };
+    case 'audio': return null;
     case 'generation': case 'supplement': return { action: 'settings', args: { generation: pick(['concurrency', 'effortPlanning', 'effortReview', 'effortWriting', 'effortRepair', 'applySuggestions']) } };
     default: return null;
   }

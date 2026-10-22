@@ -517,7 +517,7 @@ export default function Sources({ data, setModal, sourceForm, openAgent, onGener
         <section className="sources-empty" data-tour="sources-list">
           <div className="sources-empty__intro">
             <h2>{showArchived ? ui('没有已归档的资料。') : ui("还没有资料")}</h2>
-            {!showArchived && <p>{ui("添加讲义、笔记或录音，之后就能用它们出题；题目会引用原文。")}</p>}
+            {!showArchived && <p>{ui("添加讲义或笔记，之后就能用它们出题；题目会引用原文。")}</p>}
           </div>
           {!showArchived && sourceForm}
         </section>

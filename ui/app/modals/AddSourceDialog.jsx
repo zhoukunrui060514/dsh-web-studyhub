@@ -2,9 +2,7 @@ import React from 'react';
 import { ui, uiFormat } from '../../i18n.js';
 import { Dialog, InlineMessage } from '../../components/index.js';
 import { hasContext } from '../../capabilities.js';
-import { parseCourses } from '../../CourseField.jsx';
 import ImportHub from '../../ImportHub.jsx';
-import AudioImport from '../../AudioImport.jsx';
 import { useApp } from '../app-context.js';
 
 /** The add-material form while the host has the materials component off: why, and the way to switch it on when the host has one. */
@@ -39,10 +37,7 @@ export function SourceForm() {
       resumeFile={lib.modal?.resumeConversion}
       onImported={() => refresh().catch(() => {})} onComplete={sources.finishImport}
       onOpenSettings={openSettings}
-      onOpenSources={(ids) => { nav.navigate('sources'); learn.openAudioSources(ids); }}
-      audio={hasContext(data, 'audio') ? <AudioImport data={data} defaultCourses={parseCourses(sources.formCourse)}
-        canAsk={!!host.askInChat} openAgent={host.openAgent} onOpenSources={learn.openAudioSources} onStarted={sources.finishAudioStart}
-        onOpenSettings={() => { set.setModal(null); nav.navigate('settings'); }} /> : undefined} />
+      onOpenSources={(ids) => { nav.navigate('sources'); learn.openAudioSources(ids); }} />
   );
 }
 

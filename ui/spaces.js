@@ -5,11 +5,11 @@
    views    the pages the space header switches between, in order; a view the host does not offer (ui/capabilities.js) is left out
    members  the other pages that sit inside the space (a run, a sub-page or a page on its way out) and keep it lit in the sidebar
    label    the sidebar entry; a view's own label is VIEW_LABELS[page]
-   Pages the plan retires or merges (课堂实录, 备考补习, 知识骨架) stay views until their stage lands, so every stage ships with every feature reachable. */
+   Pages the plan retires or merges (备考补习, 知识骨架) stay views until their stage lands, so every stage ships with every feature reachable. */
 
 export const SPACES = Object.freeze([
   { id: 'today', label: '今天', glyph: 'today', views: ['library'], members: ['review', 'workflows'] },
-  { id: 'materials', label: '资料', glyph: 'sources', views: ['sources', 'audio', 'live', 'generate'], members: [] },
+  { id: 'materials', label: '资料', glyph: 'sources', views: ['sources', 'generate'], members: [] },
   { id: 'knowledge', label: '知识', glyph: 'knowledge', views: ['book', 'knowledge', 'examprep', 'skeleton'], members: ['outline', 'graph'] },
   { id: 'practice', label: '练习', glyph: 'practice', views: ['bank', 'wrongbook', 'exam'], members: ['draft', 'manage'] },
   { id: 'records', label: '记录', glyph: 'records', views: ['records', 'notes', 'dashboard', 'board'], members: [] },
@@ -18,7 +18,7 @@ export const SPACES = Object.freeze([
 /** The label of a page where it is a view of a space (the space header's tab, the "返回…" words). */
 export const VIEW_LABELS = Object.freeze({
   library: '今天',
-  sources: '资料库', audio: '录音与转写', live: '课堂实录', generate: '生成',
+  sources: '资料库', generate: '生成',
   book: '大纲', knowledge: '概念网络', examprep: '备考补习', skeleton: '知识骨架',
   bank: '题库', wrongbook: '待巩固', exam: '考试',
   records: '学习记录', notes: '笔记', dashboard: '统计', board: '待办',

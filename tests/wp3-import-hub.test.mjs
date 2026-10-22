@@ -24,18 +24,18 @@ const render = props => renderToStaticMarkup(React.createElement(ImportHub, { da
 const deckJson = JSON.stringify({ title: '期中复习', cards: [{ kind: 'flashcard', prompt: 'Q', answer: 'A' }] });
 const bilibili = JSON.stringify({ body: [{ from: 0, to: 2.5, content: '大家好' }, { from: 2.5, to: 4, content: '今天讲分页' }] });
 
-test('files are routed by type; audio and subtitles only when the audio component is on', () => {
+test('files are routed by type; audio and subtitles are retired', () => {
   for (const name of ['a.pdf', 'b.MD', 'c.markdown', 'd.html', 'e.htm', 'f.txt']) assert.equal(routeImportFile({ name }, { audio: true }), 'document', name);
   assert.equal(routeImportFile({ name: 'deck.json' }, { audio: true }), 'deck');
-  assert.equal(routeImportFile({ name: 'lecture.srt' }, { audio: true }), 'subtitle');
-  assert.equal(routeImportFile({ name: 'lecture.vtt' }, { audio: true }), 'subtitle');
+  assert.equal(routeImportFile({ name: 'lecture.srt' }, { audio: true }), null);
+  assert.equal(routeImportFile({ name: 'lecture.vtt' }, { audio: true }), null);
   assert.equal(routeImportFile({ name: 'lecture.srt' }, { audio: false }), null);
-  assert.equal(routeImportFile({ name: 'talk.mp3' }, { audio: true }), 'audio');
+  assert.equal(routeImportFile({ name: 'talk.mp3' }, { audio: true }), null);
   assert.equal(routeImportFile({ name: 'talk.mp3' }, { audio: false }), null);
   assert.equal(routeImportFile({ name: 'virus.exe' }, { audio: true }), null);
   const withAudio = importAccept({ audio: true }), plain = importAccept({ audio: false });
   for (const extension of ['.pdf', '.md', '.markdown', '.html', '.htm', '.txt', '.json']) assert.ok(plain.includes(extension), extension);
-  assert.ok(withAudio.includes('.srt') && withAudio.includes('.vtt') && withAudio.includes('.mp3'));
+  assert.ok(!withAudio.includes('.srt') && !withAudio.includes('.vtt') && !withAudio.includes('.mp3'));
   assert.ok(!plain.includes('.srt') && !plain.includes('.mp3'));
   assert.equal(plain.filter(extension => extension === '.txt').length, 1, '.txt has exactly one entry point');
 });
@@ -84,12 +84,12 @@ test('one batch imports documents and decks, each with its own status and plain 
   assert.match(results[4].error, /8 MB/);
   assert.doesNotMatch(results[4].error, /Document exceeds/);
   assert.match(results[5].error, /OCR|扫描/);
-  assert.match(results[6].error, /音频/);
-  assert.match(results[3].error, /估算/);
+  assert.match(results[6].error, /不支持/);
+  assert.match(results[3].error, /不支持/);
   for (const result of results.filter(item => item.status === 'error')) assert.match(result.error, han);
   assert.deepEqual(results.filter(item => item.status === 'error').map(item => item.permanent), [true, true, true, true],
     'a file that is too large, has no text, is audio or a subtitle will fail again here: offer removal (or the audio form), not retry');
-  assert.deepEqual(results.filter(item => item.status === 'error').map(item => !!item.carry), [true, false, false, true], 'the subtitle and the recording belong to the audio form');
+  assert.deepEqual(results.filter(item => item.status === 'error').map(item => !!item.carry), [false, false, false, false], 'retired formats offer removal');
   const flaky = await runImport([new File(['# x'], 'notes.md')], { call: async () => { throw new Error('连接中断'); } });
   assert.equal(flaky[0].permanent, false, 'a dropped connection is worth a retry');
   assert.equal(flaky[0].error, '连接中断');
@@ -105,7 +105,7 @@ test('a subtitle JSON dropped with the decks goes to the audio form, which shows
   const calls = [];
   const results = await runImport([new File([bilibili], 'bili.json')], { call: async (action, args) => { calls.push(action); return { id: 'job', args }; }, courses: [], audio: true });
   assert.equal(results[0].status, 'error');
-  assert.equal(results[0].carry, true);
+  assert.equal(results[0].carry, undefined);
   assert.deepEqual(calls, [], 'nothing was started');
 });
 
@@ -135,7 +135,7 @@ test('import errors are rewritten in plain language and keep unknown details', (
 
 test('the dialog asks for the course first and offers one drop zone for every file type', () => {
   setUiLanguage('zh');
-  const html = render({ audio: React.createElement('div', { className: 'audio-stub' }, 'audio') });
+  const html = render({});
   const course = html.indexOf('归入「操作系统」'), drop = html.indexOf('data-tour="import-drop"');
   assert.ok(course >= 0 && drop > course, 'the course line sits above the controls it affects');
   assert.doesNotMatch(html, /value="操作系统"/, 'the field itself is behind 更改');
@@ -145,7 +145,7 @@ test('the dialog asks for the course first and offers one drop zone for every fi
   assert.match(ordinaryInputs[0], /multiple/);
   assert.match(html, /aria-pressed="true"[^>]*>(?:<svg[\s\S]*?<\/svg>)?文件/);
   assert.match(html, /粘贴文本/);
-  assert.match(html, /音频/);
+  assert.doesNotMatch(html, /音频/);
   assert.doesNotMatch(html, /audio-stub/, 'audio is a secondary tab, not shown by default');
   assert.doesNotMatch(html, /导入 Markdown \/ 文本/);
   assert.doesNotMatch(render({}), /aria-pressed="false"[^>]*>(?:<svg[\s\S]*?<\/svg>)?音频/, 'no audio tab without the audio component');
@@ -164,7 +164,7 @@ test('the dialog reads in English without Chinese application copy', () => {
   setUiLanguage('en');
   try {
     const strip = html => html.replace(/<[^>]+>/g, ' ').replace(/操作系统/g, '');
-    assert.doesNotMatch(strip(render({ audio: React.createElement('div') })), han);
+    assert.doesNotMatch(strip(render({})), han);
     assert.doesNotMatch(strip(render({ initialTab: 'paste' })), han);
   } finally { setUiLanguage('zh'); }
 });

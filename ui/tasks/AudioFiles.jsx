@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { ui, uiFormat } from '../i18n.js';
 import { Badge, Button } from '../components/index.js';
-import { useApp } from '../app/app-context.js';
-import { failureText } from '../failure.js';
 import { joinMeta } from '../format.js';
 import { timelineLegend } from './call-model.js';
 
@@ -25,15 +23,9 @@ function Cells({ file, stages }) {
 }
 
 export default function AudioFiles({ contract }) {
-  const { core } = useApp();
   const files = contract.detail.files || [], blocked = contract.detail.blocked, stages = timelineLegend('audio', contract.kind);
-  const [picked, setPicked] = useState(files.length === 1 ? 0 : Number.isInteger(blocked?.index) ? blocked.index : null), [problem, setProblem] = useState('');
+  const [picked, setPicked] = useState(files.length === 1 ? 0 : Number.isInteger(blocked?.index) ? blocked.index : null);
   const file = picked !== null ? files[picked] : null;
-  const skip = async () => {
-    setProblem('');
-    try { await core.act('audio.retry', { jobId: contract.attemptId || contract.jobId, skip: [file.index] }); } catch (error) { setProblem(failureText(error)); }
-  };
-  const canSkip = file && blocked && blocked.index === file.index && contract.actions.retry.available;
   return (
     <div className="tc-files">
       <div className="tc-scroll">
@@ -51,8 +43,6 @@ export default function AudioFiles({ contract }) {
           <span className="tc-strip__title">{file.filename}</span>
           <span className="tc-strip__line">{joinMeta(stages.filter(([stage]) => file.steps?.[stage]?.total > 0).map(([stage, label]) => uiFormat('{0} {1}/{2}', [ui(label), file.steps[stage].done, file.steps[stage].total]))) || ui('还没有开始')}
             {file.reused ? ` · ${ui('复用了已保存的结果')}` : ''}{file.stage ? ` · ${file.stage}` : ''}</span>
-          {canSkip && <Button size="sm" disabled={core.busy} onClick={skip}>{ui('跳过这个文件继续')}</Button>}
-          {problem && <span className="tc-strip__problem">{problem}</span>}
         </> : <span className="tc-strip__hint">{ui('选一个文件，在这里看它每一步的进度。')}</span>}
       </div>
     </div>

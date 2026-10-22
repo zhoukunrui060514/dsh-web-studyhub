@@ -1,8 +1,6 @@
 import { ui } from './i18n.js';
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { audioFocusPending } from './audio-focus.js';
 import { hasContext } from './capabilities.js';
-import { KEY_FIELDS } from '../lib/audio-providers.js';
 import { SETTINGS_GROUPS, categoriesFor, categoryForAnchor, initialCategory, settingsGroupState } from './settings-groups.js';
 import { CrashFallback, LoadingState, PageHeader } from './components/index.js';
 import { useStudy } from './study-context.jsx';
@@ -13,7 +11,6 @@ import css from './settings.css';
 import { loadMineruLocal } from './use-mineru.js';
 import { loadRetrievalStatus } from './retrieval-status.js';
 import { readText, writeText } from './storage.js';
-import { useHostQuery } from './host-query.js';
 import { useLiveEffect } from './use-async.js';
 
 /* App names the file of an export with this; it lives in its own module so the page does not load the backup section for it. */
@@ -98,9 +95,7 @@ export default function Settings({
 
   // What the host says is set up: read once, quietly (no model is called). It only decides which group starts open.
   const [loaded, setStatus] = useState({});
-  // The audio keys are one of the host's shared answers (ui/host-query.js): a key saved in the audio pane changes this page's "set up" mark at once.
-  const audioSettings = useHostQuery('audio.settings.get', {}, { enabled: typeof call === 'function' && hasContext(data, 'audio') }).data;
-  const status = audioSettings ? { ...loaded, audio: { configured: KEY_FIELDS.some((field) => audioSettings[field]?.set) } } : loaded;
+  const status = loaded;
   useLiveEffect((live) => {
     if (typeof call !== 'function') return;
     const keep = (name) => (value) => { if (live() && value) setStatus((current) => ({ ...current, [name]: value })); };
@@ -109,13 +104,13 @@ export default function Settings({
     if (hasContext(data, 'generation')) loadRetrievalStatus(call).then((value) => keep('retrieval')(value && { status: value, plan: null }), () => {});
   }, []);
 
-  // What the host can show, what needs attention, and which category is selected: a deep link (the audio key, the search extension, the model) or the tour
+  // What the host can show, what needs attention, and which category is selected: a deep link (the search extension or model) or the tour
   // points at one; otherwise the first that needs attention, otherwise the one used last.
   const capabilities = { audio: hasContext(data, 'audio'), generation: hasContext(data, 'generation'), system: hasContext(data, 'system') };
   const available = categoriesFor(capabilities);
   const state = settingsGroupState({ data, status });
   const missing = state.common.missing.concat(state.once.missing);
-  const [active, setActive] = useState(() => initialCategory({ available, focusSection: focusSection || (audioFocusPending() ? 'settings-audio' : ''), missing, last: readCategory() }));
+  const [active, setActive] = useState(() => initialCategory({ available, focusSection, missing, last: readCategory() }));
   const select = (id) => { setActive(id); writeCategory(id); };
   useEffect(() => {
     if (!focusSection) return undefined;

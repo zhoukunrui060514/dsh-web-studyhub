@@ -3,20 +3,18 @@
    Settings are grouped by how often they are touched:
    - 常用: what a learner adjusts in daily use or whenever something is off, one category each (for example the interface, formulas and
      calculation tools, the library folder and the AI model, the question preferences, the daily recap);
-   - 一次性设置: what is set once, for a feature or a course (keys, the search extension, MinerU, audio, courses, 备考补习, import, backup);
+   - 一次性设置: what is set once, for a feature or a course (keys, the search extension, MinerU, courses, 备考补习, import, backup);
    - 高级: what almost nobody needs: the usage frequency record (opt-in, local; docs/usage-frequency.md) and the one switch "显示实验性功能"
      (the experimental block appears under it only when it is on). Both are off by default and independent of each other.
 
    The page lists the categories under the group headings, one at a time on the right. A category that THIS library still needs set up carries
-   the mark "待设置", and the first such category is the one that opens first. "Needs" is read from the library, never assumed: a transcription
-   key is missing only when the library has recordings, MinerU only when it holds a long book that was never converted, the search extension
+   the mark "待设置", and the first such category is the one that opens first. "Needs" is read from the library, never assumed: MinerU is missing only when it holds a long book that was never converted, the search extension
    only when it holds a big book. `status` is what the host reported ({ audio: { configured }, mineru: { configured }, retrieval: { status, plan } });
    a status that has not arrived marks nothing. The registry below is the one place a category is declared: its title, group, deep-link anchors, the
    host component it needs, and the pane it renders (loaded lazily). */
 import { lazy } from 'react';
 import { groupSourcesByDocument } from '../lib/source-groups.js';
 import { bigDocuments } from '../lib/large-documents.js';
-import { JOB_TYPES } from '../lib/job-status.js';
 
 export const SETTINGS_GROUPS = Object.freeze([
   { id: 'common', title: '常用' },
@@ -39,7 +37,6 @@ export const SETTINGS_CATEGORIES = Object.freeze([
   category({ id: 'practice', group: 'common', title: '练习', anchors: ['settings-practice'] }, () => import('./settings/PracticePane.jsx')),
   category({ id: 'courses', group: 'once', title: '课程', anchors: ['settings-courses'] }, () => import('./settings/CoursesPane.jsx')),
   category({ id: 'exam-prep', group: 'once', title: '备考补习', anchors: ['settings-exam-prep'], needs: 'generation' }, () => import('./settings/ExamPrepPane.jsx')),
-  category({ id: 'audio', group: 'once', title: '音频转写', anchors: ['settings-audio'], needs: 'audio' }, () => import('./settings/AudioPane.jsx')),
   category({ id: 'mineru', group: 'once', title: 'PDF 转换（MinerU / Marker）', anchors: ['settings-mineru', 'settings-marker'], partNeeds: { routes: 'audio' } }, () => import('./settings/MineruPane.jsx')),
   category({ id: 'retrieval', group: 'once', title: '检索扩展', anchors: ['settings-extensions'], needs: 'generation' }, () => import('./settings/RetrievalPane.jsx')),
   category({ id: 'profile', group: 'once', title: '学习画像与导览', anchors: ['settings-profile', 'settings-sample'] }, () => import('./settings/ProfilePane.jsx')),
@@ -82,8 +79,6 @@ export function settingsGroupState({ data, status = {} } = {}) {
 
   const items = groupSourcesByDocument(data?.sources || []);
   const books = bigDocuments(items);
-  const hasRecordings = (data?.sources || []).some((source) => source.audio) || (data?.jobs || []).some((job) => job.type === JOB_TYPES.AUDIO_IMPORT);
-  if (hasRecordings && status.audio?.configured === false) missing.once.push('audio');
   if (books.some((item) => !item.converted && !item.chapters?.length) && status.mineru?.configured === false) missing.once.push('mineru');
   const search = status.retrieval?.status;
   if (books.length && search?.extension && !search.extension.installed && search.extension.canInstall !== false && (!search.effective || search.effective === 'builtin')) missing.once.push('retrieval');

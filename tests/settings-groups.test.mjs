@@ -55,7 +55,7 @@ test('no AI model: the common group says the model is not set up', () => {
 
 test('what only a feature the library already uses needs is marked: audio for recordings, MinerU for a book, search for a big book', () => {
   const audio = settingsGroupState({ data: data({ sources: [{ id: 'a1', title: 'Lecture', text: 't', courses: ['A'], audio: { fileName: 'l.m4a' } }] }), status: { ...all, audio: { configured: false } } });
-  assert.deepEqual(audio.once, { missing: ['audio'] });
+  assert.deepEqual(audio.once, { missing: [] });
   const noAudioUse = settingsGroupState({ data: data(), status: { ...all, audio: { configured: false } } });
   assert.deepEqual(noAudioUse.once, { missing: [] }, 'a library with no recordings has no use for a transcription key');
   const book = settingsGroupState({ data: data({ sources: big() }), status: { ...all, mineru: { configured: false } } });
@@ -76,11 +76,11 @@ test('a status that has not arrived yet marks nothing; the state names what is m
 test('the category list sits under the three group headings, marks the selected one and says in words which need attention', () => {
   setUiLanguage('zh');
   const available = categoriesFor({ audio: true, generation: true, system: true });
-  const html = renderToStaticMarkup(h(SettingsNav, { available, active: 'audio', missing: ['model', 'audio'], onSelect: noop }));
+  const html = renderToStaticMarkup(h(SettingsNav, { available, active: 'mineru', missing: ['model', 'mineru'], onSelect: noop }));
   assert.match(html, /<nav class="settings-nav"[^>]*aria-label="设置分类"/);
   for (const group of SETTINGS_GROUPS) assert.match(html, new RegExp(`<p class="settings-nav__label">${group.title}</p>`));
   assert.equal((html.match(/class="settings-nav__item"/g) || []).length, available.length);
-  assert.match(html, /data-category="audio"[^>]*aria-current="page"|aria-current="page"[^>]*data-category="audio"/);
+  assert.match(html, /data-category="mineru"[^>]*aria-current="page"|aria-current="page"[^>]*data-category="mineru"/);
   assert.equal((html.match(/aria-current="page"/g) || []).length, 1);
   assert.equal((html.match(/class="settings-nav__todo">待设置</g) || []).length, 2, 'one marker per category that needs attention, in words');
   setUiLanguage('en');

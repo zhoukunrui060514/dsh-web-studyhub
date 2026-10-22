@@ -4,7 +4,6 @@
    (ui/app/App*.jsx) draw the sidebar, top bar and dialogs, and ui/app/page-views.jsx maps each page of ui/pages.js to its component. */
 import React, { useMemo, useRef } from 'react';
 import LearningProvider from './learning/LearningProvider.jsx';
-import { LiveClass } from './workspace-views.jsx';
 import { pageAvailable } from './capabilities.js';
 import { ui, useUiLanguage } from './i18n.js';
 import Tour from './tour/Tour.jsx';
@@ -141,9 +140,6 @@ export default function App({ call: transportCall, host = NO_HOST }) {
                     <IngestBanner />
                     <StorageIssuesBanner />
                     <ContextReturn />
-                    {data && pageAvailable(data, 'live') && <LiveClass key={connection.binding.root} data={data} call={core.call} visible={page === 'live'}
-                      onSettings={() => nav.navigate('settings')} onSources={() => nav.navigate('sources')}
-                      onJobs={() => { void core.refresh().catch((failure) => core.setError(failure.message)); }} />}
                     {page === 'board' ? (
                       <Board state={boardState} library={data} onOrigin={host.openWorkspaceNotebook} studyRef={lib.boardStudyRef}
                         dailyPlan={data && pageAvailable(data, 'review') ? <DailyPlan key={`${data.root}:${dailyPlan.date}`} plan={dailyPlan}

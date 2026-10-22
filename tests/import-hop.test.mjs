@@ -97,7 +97,7 @@ test('only a PDF is offered the converter for being too large; a big text file i
   assert.match(notes.error, /按章节拆分/);
 });
 
-test('recordings and subtitles are not imported on the Files tab: they wait for the audio form, which shows the estimate', async () => {
+test('recordings and subtitles are not imported on the Files tab: retired formats are rejected without model calls', async () => {
   setUiLanguage('zh');
   const calls = [];
   const call = async action => { calls.push(action); return {}; };
@@ -106,8 +106,8 @@ test('recordings and subtitles are not imported on the Files tab: they wait for 
   const results = await runImport(files, { call, courses: [], known, audio: true });
   assert.deepEqual(calls, [], 'nothing is sent to a model, or anywhere');
   assert.deepEqual(results.map(result => result.status), ['error', 'error', 'error']);
-  assert.deepEqual(results.map(result => result.carry), [true, true, true]);
-  assert.match(results[0].error, /估算/);
+  assert.deepEqual(results.map(result => !!result.carry), [false, false, false]);
+  assert.match(results[0].error, /不支持/);
   assert.equal(importSummary(results).subtitles, undefined);
 });
 
@@ -139,7 +139,7 @@ test('without the audio component the converter says which component it is, and 
   setUiLanguage('zh');
   const off = { ...data, contexts: ['materials'] };
   const html = text(render({ data: off }));
-  assert.match(html, /PDF 解析随音频组件一起提供/);
+  assert.match(html, /当前安装未启用 PDF 解析服务/);
   assert.doesNotMatch(html, /PDF 解析组件/);
   const panel = text(renderToStaticMarkup(h(PdfConversion, { available: false, call: async () => ({}) })));
   assert.match(panel, /PDF 解析随音频组件一起提供，这个安装没有启用它/);

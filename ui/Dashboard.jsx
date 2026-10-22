@@ -167,7 +167,7 @@ export function StatsView({ stats, course, data, busy, localDecks = [], onStartS
   );
 }
 
-export default function Dashboard({ data, onStartScope, onLibrary, onCreate, onSources, onAudioUsage }) {
+export default function Dashboard({ data, onStartScope, onLibrary, onCreate, onSources }) {
   const { call, busy } = useStudy();
   useInjectCss(css, "study-views");
   useInjectCss(chartCss, "study-dash-charts");
@@ -212,7 +212,7 @@ export default function Dashboard({ data, onStartScope, onLibrary, onCreate, onS
           onStartScope={onStartScope} onLibrary={onLibrary} onCreate={onCreate} onSources={onSources} onManageCourses={courseActive?.manage} />
       )}
       {/* What the study model used, by feature (WP27); the library's own ledger, not the course view. */}
-      <ModelUsage call={call} onAudio={onAudioUsage} />
+      <ModelUsage call={call} />
     </section>
   );
 }

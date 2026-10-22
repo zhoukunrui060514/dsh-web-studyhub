@@ -31,14 +31,12 @@ test('Word and PowerPoint files (old .ppt too) are documents; other old formats 
   assert.equal(routeImportFile({ name: 'x.exe' }), null);
 });
 
-test('the picker lists documents first: .docx, .pptx and .ppt right after .pdf, audio last', () => {
+test('the picker lists documents first: .docx, .pptx and .ppt right after .pdf, recording types excluded', () => {
   const accept = importAccept({ audio: true });
   assert.deepEqual(accept.slice(0, 4), ['.pdf', '.docx', '.pptx', '.ppt']);
   for (const extension of ['.doc', '.wps', '.key', '.pages']) assert.ok(accept.includes(extension), extension);
   assert.equal(new Set(accept).size, accept.length, 'no extension is listed twice');
-  const lastDocument = Math.max(...['.pdf', '.docx', '.pptx', '.md', '.markdown', '.html', '.htm', '.txt', '.json', '.doc', '.ppt'].map(extension => accept.indexOf(extension)));
-  const firstOther = Math.min(...['.srt', '.vtt', '.mp3', '.wav', '.m4a'].map(extension => accept.indexOf(extension)));
-  assert.ok(lastDocument < firstOther, 'subtitle and audio extensions come after every document extension');
+  for (const extension of ['.srt', '.vtt', '.mp3', '.wav', '.m4a']) assert.ok(!accept.includes(extension));
   const plain = importAccept({ audio: false });
   assert.deepEqual(plain.slice(0, 4), ['.pdf', '.docx', '.pptx', '.ppt']);
   assert.ok(!plain.includes('.mp3') && !plain.includes('.srt'));
@@ -46,13 +44,13 @@ test('the picker lists documents first: .docx, .pptx and .ppt right after .pdf, 
 
 test('the drop zone hint names the new formats and one limit per format, in both languages', () => {
   setUiLanguage('zh');
-  const zh = render({ audio: React.createElement('div') });
+  const zh = render({});
   assert.match(zh, /PDF · Word · PowerPoint · Markdown/);
   assert.match(zh, /PDF 与文本最大 8 MB，Word \/ PPT 最大 40 MB/);
   assert.match(zh, /accept="\.pdf,\.docx,\.pptx,\.ppt,/);
   setUiLanguage('en');
   try {
-    const en = render({ audio: React.createElement('div') }).replace(/<[^>]+>/g, ' ');
+    const en = render({}).replace(/<[^>]+>/g, ' ');
     assert.match(en, /Word · PowerPoint/);
     assert.match(en, /PDF and text up to 8 MB, Word \/ PPT up to 40 MB/);
     assert.doesNotMatch(en.replace(/操作系统/g, ''), han);
