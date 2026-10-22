@@ -55,3 +55,5 @@
 QA 脚本每次创建独立 `output/qa/frontend-loop/run-*/library` 与 `home`，结束关闭服务。开发预览应显式传入隔离库和私有 `DSH_HOME`，不要绑定真实 DSH 或学习库。模型凭据只由环境变量提供，不写进文档或提交。
 
 交付时额外启动 [本地隔离预览](http://127.0.0.1:3200/)，HTTP 首页实测 200。它使用第三轮的验收库以及独立 `preview-home`，配置用户指定的 `gemini-3.8-flash-high` 本地兼容模型。可在顶栏选择“生理”，进入“知识 → 大纲”，选择“循环”开始新会话；“记录 → 学习记录”可回看验收完成的会话。该进程停止后链接不再可用，启动日志为 `output/qa/frontend-preview.log`。
+
+功能提交：`6e02ba00c97a55e60a1407d03dead166edd42d55`，已推送个人仓库 `zhoukunrui060514/dsh-web-studyhub` 的 `redesign/five-spaces` 并用 `git ls-remote` 确认一致。提交使用用户授权的已登录 GitHub 名称与 noreply 邮箱。四项先前暂存测试删除仍留在原暂存区，其他未纳入交付的修改仍留在 worktree。
