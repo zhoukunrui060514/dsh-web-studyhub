@@ -1,7 +1,7 @@
-/* 强调色 (设置 › 界面, #63): five presets, cinnabar by default, switched by one data-accent attribute that overrides a handful of tokens per theme.
+/* 强调色 (设置 › 界面, #63): five presets, indigo by default (the Clarity redesign; the old cinnabar default is the `vermilion` preset), switched by one data-accent attribute that overrides a handful of tokens per theme.
    The state lives in the unified appearance store; the colours live in ui/accent.css (injected right after the global sheets) and in tokens.css, whose
-   card stock now derives its accent tints from var(--accent). Every preset x dark/light x card stock must keep the contrast the cinnabar
-   desk has (tests/wp1-tokens): accent text on every surface, the ink on the accent fill, the accent as a visible rule on the canvas and on paper. */
+   card stock derives its accent tints from var(--accent). Every preset x dark/light x card stock must keep the contrast the indigo
+   default has (tests/wp1-tokens): accent text on every surface, the ink on the accent fill, the accent as a visible rule on the canvas and on paper. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -10,21 +10,22 @@ import { readAppSource } from './helpers/app-source.mjs';
 
 const { APPEARANCE_DEFAULTS, APPEARANCE_OPTIONS, APPEARANCE_LABELS, normalizeAppearance, appearanceAttrs, exportAppearance, importAppearance } = appearance;
 const read = async file => (await readFile(new URL(`../${file}`, import.meta.url), 'utf8')).replace(/\r\n/g, '\n');
-const PRESETS = ['cinnabar', 'jade', 'ochre', 'graphite', 'plum'];
+const PRESETS = ['indigo', 'vermilion', 'jade', 'ochre', 'graphite'];
 const dark = { light: false, reducedMotion: false };
 
 /* ---------- the state ---------- */
 
-test('accent is one more appearance setting: five presets, cinnabar by default, the whitelist of an import', () => {
+test('accent is one more appearance setting: five presets, indigo by default, the whitelist of an import', () => {
   assert.deepEqual(APPEARANCE_OPTIONS.accent, PRESETS);
-  assert.equal(APPEARANCE_DEFAULTS.accent, 'cinnabar');
+  assert.equal(APPEARANCE_DEFAULTS.accent, 'indigo');
+  assert.equal(normalizeAppearance({ accent: 'cinnabar' }).accent, 'indigo', 'the stored old default falls back to the new one');
   assert.equal(normalizeAppearance({ accent: 'jade' }).accent, 'jade');
-  for (const bad of ['neon', '#ff00ff', 'JADE', '', null, 7, undefined]) assert.equal(normalizeAppearance({ accent: bad }).accent, 'cinnabar', String(bad));
-  assert.deepEqual(importAppearance(exportAppearance({ accent: 'plum', theme: 'light' })), { ...APPEARANCE_DEFAULTS, accent: 'plum', theme: 'light' });
-  assert.equal(importAppearance(JSON.stringify({ studyhubAppearance: 1, accent: 'url(javascript:x)' })).accent, 'cinnabar', 'an import cannot set a colour outside the list');
+  for (const bad of ['neon', '#ff00ff', 'JADE', '', null, 7, undefined]) assert.equal(normalizeAppearance({ accent: bad }).accent, 'indigo', String(bad));
+  assert.deepEqual(importAppearance(exportAppearance({ accent: 'vermilion', theme: 'light' })), { ...APPEARANCE_DEFAULTS, accent: 'vermilion', theme: 'light' });
+  assert.equal(importAppearance(JSON.stringify({ studyhubAppearance: 1, accent: 'url(javascript:x)' })).accent, 'indigo', 'an import cannot set a colour outside the list');
   assert.equal(appearanceAttrs({ accent: 'ochre' }, dark)['data-accent'], 'ochre');
-  assert.equal(appearanceAttrs({}, dark)['data-accent'], 'cinnabar');
-  assert.equal(appearanceAttrs({ accent: 'bogus' }, dark)['data-accent'], 'cinnabar', 'an invalid value never reaches the DOM');
+  assert.equal(appearanceAttrs({}, dark)['data-accent'], 'indigo');
+  assert.equal(appearanceAttrs({ accent: 'bogus' }, dark)['data-accent'], 'indigo', 'an invalid value never reaches the DOM');
 });
 
 test('every preset has a zh label and an English one', async () => {
@@ -120,9 +121,9 @@ const contrast = (a, b) => { const [hi, lo] = [luminance(a), luminance(b)].sort(
 const ratio = (scope, fg, bg) => contrast(color(`var(${fg})`, scope), color(`var(${bg})`, scope));
 const scopeOf = (name, theme) => ({ ...darkBase, ...(theme === 'light' ? lightBase : {}), ...overrides(name, theme) });
 
-test('accent.css overrides a handful of tokens for each non-default preset, dark and light, and cinnabar needs no override at all', () => {
+test('accent.css overrides a handful of tokens for each non-default preset, dark and light, and indigo needs no override at all', () => {
   assert.ok(Buffer.byteLength(accentCss) <= 2048, `accent.css is ${Buffer.byteLength(accentCss)} bytes, the budget is 2048`);
-  assert.equal(presetRule('cinnabar'), undefined, 'the default renders from tokens.css alone');
+  assert.equal(presetRule('indigo'), undefined, 'the default renders from tokens.css alone');
   const names = new Set(['--accent', '--accent-soft', '--accent-text', '--bg-selected', '--accent-ink']);
   for (const name of PRESETS.slice(1)) {
     const r = presetRule(name);
@@ -139,28 +140,19 @@ test('accent.css overrides a handful of tokens for each non-default preset, dark
 });
 
 test('the accent is written once: tokens.css keeps a literal only in the two --accent lines, the card stock and the glow and ring derive from it', () => {
-  assert.equal((styleCss.match(/c93d22|c03a1f/gi) || []).length, 2, 'dark and light --accent are the only cinnabar literals');
+  assert.equal((styleCss.match(/4c5fdc|3d4fd6/gi) || []).length, 2, 'dark and light --accent are the only accent literals');
   assert.match(styleCss, /--accent-glow:\s*color-mix\(in srgb, var\(--accent\)/);
   assert.match(styleCss, /--ring:\s*0 0 0 3px color-mix\(in srgb, var\(--accent\)/);
-  for (const key of ['--bg-selected', '--accent-soft', '--accent-glow', '--ring'])
+  for (const key of ['--bg-selected', '--accent-glow', '--ring'])
     assert.match(cardBase[key], /color-mix\(in srgb, var\(--accent\)/, `card stock ${key} derives from --accent`);
-  assert.doesNotMatch(Object.values(cardBase).join(' '), /c93d22|c03a1f|b3361c/i, 'no literal cinnabar on the card');
+  assert.doesNotMatch(Object.values(cardBase).join(' '), /4c5fdc|3d4fd6/i, 'no literal accent on the card');
 });
 
-test('cinnabar renders as before: the derived card and glow tints equal the old literals (within rounding)', () => {
-  const close = (a, b, tolerance, label) => a.forEach((x, k) => assert.ok(Math.abs(x - b[k]) <= tolerance, `${label}: ${a.map(Math.round)} vs ${b.map(Math.round)}`));
-  const dk = scopeOf('cinnabar', 'dark'), card = { ...dk, ...cardBase };
-  close(color(card['--bg-selected'], card).slice(0, 3), [201, 61, 34], 0.5, 'selected rgb');
-  assert.ok(Math.abs(color(card['--bg-selected'], card)[3] - 0x14 / 255) < 0.003, 'selected alpha is #14');
-  assert.ok(Math.abs(color(card['--accent-glow'], card)[3] - 0x33 / 255) < 0.003, 'card glow alpha is #33');
-  close(color(card['--accent-soft'], card), [0xb3, 0x36, 0x1c, 1], 2.5, 'card accent-soft');
-  assert.ok(Math.abs(color(dk['--accent-glow'], dk)[3] - 0x47 / 255) < 0.003, 'dark glow alpha is #47');
-  assert.ok(Math.abs(color(dk['--ring'].replace('0 0 0 3px ', ''), dk)[3] - 0x40 / 255) < 0.003, 'dark ring alpha is #40');
-  const lt = scopeOf('cinnabar', 'light');
-  assert.ok(Math.abs(color(lt['--accent-glow'], lt)[3] - 0x33 / 255) < 0.003, 'light glow alpha is #33');
-  assert.ok(Math.abs(color(lt['--ring'].replace('0 0 0 3px ', ''), lt)[3] - 0x33 / 255) < 0.003, 'light ring alpha is #33');
-  assert.equal(dk['--accent'], '#c93d22');
-  assert.equal(lt['--accent'], '#c03a1f');
+test('indigo is the default: tokens.css carries it and the glow and ring derive from it', () => {
+  const dk = scopeOf('indigo', 'dark'), lt = scopeOf('indigo', 'light');
+  assert.equal(dk['--accent'], '#4c5fdc');
+  assert.equal(lt['--accent'], '#3d4fd6');
+  for (const scope of [dk, lt]) for (const key of ['--accent-glow', '--ring']) assert.match(scope[key], /var\(--accent\)/, key);
 });
 
 const SURFACES = ['--bg-canvas', '--bg-sunken', '--bg-surface', '--bg-raised', '--bg-selected'];
@@ -178,9 +170,8 @@ for (const name of PRESETS) for (const theme of ['dark', 'light']) {
     for (const [token, min] of [['--accent', 3], ['--accent-soft', 4.5]]) { const r = ratio(scope, token, '--bg-raised'); if (r < min) failures.push(`${token} on paper: ${r.toFixed(2)} < ${min}`); }
     const ink = ratio(scope, '--accent-ink', '--accent');
     if (ink < 4.5) failures.push(`--accent-ink on --accent: ${ink.toFixed(2)}`);
-    /* A selected row on paper: AA, except where the default itself is below it (--text-faint and --accent-soft of cinnabar on the dark paper, 4.16 and 4.32,
-       as shipped): a preset must be no worse than cinnabar. */
-    const base = { ...scopeOf('cinnabar', theme), ...cardBase }, baseSolid = over(color('var(--bg-selected)', base), color('var(--bg-raised)', base));
+    /* A selected row on paper: AA, except where the default itself is below it: a preset must be no worse than indigo. */
+    const base = { ...scopeOf('indigo', theme), ...cardBase }, baseSolid = over(color('var(--bg-selected)', base), color('var(--bg-raised)', base));
     const solid = over(color('var(--bg-selected)', scope), paper);
     for (const fg of ['--text', '--text-dim', '--text-muted', '--text-faint', '--accent-soft']) {
       const floor = Math.min(4.5, contrast(color(`var(${fg})`, base), baseSolid) - 0.01), r = contrast(color(`var(${fg})`, scope), solid);
@@ -190,14 +181,15 @@ for (const name of PRESETS) for (const theme of ['dark', 'light']) {
   });
 }
 
-test('the presets are distinct and none is blue-violet (ui/DESIGN.md): the accent hue stays out of 215-290 degrees', () => {
+test('the presets are distinct, and only the default sits in the indigo range (ui/DESIGN.md)', () => {
   const hue = ([r, g, b]) => { const [x, y, z] = [r, g, b].map(v => v / 255), max = Math.max(x, y, z), d = max - Math.min(x, y, z); if (!d) return 0; const h = max === x ? ((y - z) / d) % 6 : max === y ? (z - x) / d + 2 : (x - y) / d + 4; return (h * 60 + 360) % 360; };
   const seen = new Set();
   for (const name of PRESETS) for (const theme of ['dark', 'light']) {
     const value = scopeOf(name, theme)['--accent'];
     seen.add(value);
-    const [r, g, b] = color(value, {}), sat = Math.max(r, g, b) - Math.min(r, g, b);
-    if (sat > 24) assert.ok(hue([r, g, b]) < 215 || hue([r, g, b]) > 290, `${name} ${theme} ${value} hue ${hue([r, g, b]).toFixed(0)}`);
+    const [r, g, b] = color(value, {}), sat = Math.max(r, g, b) - Math.min(r, g, b), h = hue([r, g, b]);
+    if (name === 'indigo') assert.ok(h >= 225 && h <= 240, `indigo ${theme} hue ${h.toFixed(0)}`);
+    else if (sat > 24) assert.ok(h < 215 || h > 290, `${name} ${theme} ${value} hue ${h.toFixed(0)} stays apart from the default`);
   }
   assert.equal(seen.size, PRESETS.length * 2, 'every preset and theme has its own colour');
 });

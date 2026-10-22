@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { ui, uiFormat } from "./i18n.js";
 import { useInjectCss } from "./shared.js";
-import PageScope from "./PageScope.jsx";
 import { Badge, Button, Disclosure, PageHeader, Panel, SegmentedControl } from "./components/index.js";
 import { formatDateTime } from "./format.js";
 import { filterRecent } from "./exam-format.js";
@@ -26,8 +25,7 @@ export function ExamHeader({ courses, course, onCourse, format, onFormat, showIn
   useInjectCss(css, "study-exam-setup");
   return (
     <PageHeader title={ui("模拟考试")} className="es-header"
-      description={ui("选一种考试形式，在限定时间里完成；交卷或结束后看成绩、反馈和薄弱点。")}
-      scope={<PageScope courses={courses} value={course} onChange={onCourse} showInactive={showInactive} onShowInactive={onShowInactive} />}>
+      description={ui("选一种考试形式，在限定时间里完成；交卷或结束后看成绩、反馈和薄弱点。")}>
       <div className="es-controls">
         <div className="es-format">
           <span className="es-label">{ui("考试形式")}</span>

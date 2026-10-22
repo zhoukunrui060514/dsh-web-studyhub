@@ -3,12 +3,12 @@
 @layer study.reset, study.tokens, study.components, study.features, study.overrides;
 
 @layer study.tokens {
-  /* OLED black: dark ink on a near-black desk, same accent; the card stays paper. */
+  /* OLED black: true-black desk, same accent; the card is the darkest raised step. */
   .study-app[data-palette='oled'],
   .study-seat:has(> .study-app[data-palette='oled']) {
-    --bg-canvas: #060505; --bg-sunken: #000000; --bg-surface: #0e0c0b; --bg-raised: #181513;
-    --bg-glass: #0e0c0bf0; --bg-glass-strong: #0e0c0bfa; --bg-selected: #231a16;
-    --line: #2a2622; --line-strong: #433d35; --decor-faint: #6a635a;
+    --bg-canvas: #050506; --bg-sunken: #000000; --bg-surface: #0d0e10; --bg-raised: #16181b;
+    --bg-glass: #0d0e10f0; --bg-glass-strong: #0d0e10fa; --bg-selected: #1c2140;
+    --line: #25282d; --line-strong: #3a3f46; --decor-faint: #5d646d; --paper: #16181b;
   }
   /* 护眼纸色: warm sepia paper, soft ink. */
   .study-app[data-palette='paper'],
@@ -17,20 +17,16 @@
     --bg-glass: #f7efddf0; --bg-glass-strong: #f7efddfa; --bg-hover: #4a35180d; --bg-selected: #efd9c6;
     --line-soft: #4a351814; --line: #d8cbb0; --line-strong: #bfae8d;
     --text: #231d12; --text-dim: #433929; --text-muted: #5d513c; --text-faint: #64583f; --decor-faint: #968a72;
-    --accent-text: #a33a1f; --ok: #1c6c48; --warn: #7f510c; --bad: #a23461; --info: #346287; --paper: #fcf6e6;
+    --accent-text: #3343b5; --ok: #1c6c48; --warn: #7f510c; --bad: #a23461; --info: #346287; --paper: #fcf6e6;
   }
   /* High contrast: stronger lines, solid faint text, 3px focus outline (dark, light, card stock). */
   .study-app[data-contrast='high'],
   .study-seat:has(> .study-app[data-contrast='high']) {
-    --line: #847c70; --line-strong: #a69d8f; --text-faint: #c0b8ac; --decor-faint: #8a8276;
+    --line: #7d848e; --line-strong: #a3aab4; --text-faint: #c0c5cc; --decor-faint: #858c95;
   }
   .study-app[data-contrast='high'][data-theme='light'],
   .study-seat:has(> .study-app[data-contrast='high'][data-theme='light']) {
-    --line: #766c5a; --line-strong: #5a5143; --text-faint: #433b30; --decor-faint: #7a705f;
-  }
-  .study-app[data-contrast='high'] :is(.sh-paper, .sh-paper-card, .flash-area .question-meta,
-    .flash-area .card-progress, .study-document-viewer[data-tone='paper'] .reader-page, .study-reading[data-tone='paper']) {
-    --line: #6e6252; --line-strong: #4d4438; --text-faint: #4a4236; --decor-faint: #7a705f;
+    --line: #6b727c; --line-strong: #4a515a; --text-faint: #3a414a; --decor-faint: #6f7680;
   }
   .study-app[data-contrast='high'] :is(button, a, input, textarea, select):focus-visible { outline-width: 3px; outline-offset: 2px; }
   /* Density: spacing and line height only. Corners: the three radius tokens only. */

@@ -27,7 +27,6 @@ import CatalogToolbar from "./study-map/CatalogToolbar.jsx";
 import TopicGroupReminder from "./study-map/TopicGroupReminder.jsx";
 import MergeSuggestions, { useMergeSuggestions } from "./study-map/MergeSuggestions.jsx";
 import DeckTree from "./study-map/DeckTree.jsx";
-import NotebookDirectory from "./study-map/NotebookDirectory.jsx";
 import SelectionBar from "./study-map/SelectionBar.jsx";
 import { isAudioJob, JOB_TYPES } from '../lib/job-status.js';
 
@@ -41,10 +40,10 @@ import { isAudioJob, JOB_TYPES } from '../lib/job-status.js';
                       importLibrary, generateFromSources, startCourseFlow, onCoachPractice, onWeakPoints, onShowGraph,
                       onCourseSettings, onShowOutline } (see ui/app/page-views.jsx)
      setupHandlers  the 课程准备 checklist's handlers (createSetupHandlers)
-     notebooks      the cross-workspace notebook directory (useNotebooks: notebooks, notebookError, publish, unpublish, open,
-                    loadNotebooks, search)
      reveal / onRevealed   scroll the progress card into view after a generation starts */
-export default function StudyMap({ data, actions = {}, setupHandlers, notebooks, reveal, onRevealed, children }) {
+/* The redesign splits the old home in two (ui/spaces.js): `part="today"` is 今天 (the day's work and the course), `part="bank"` is 练习 › 题库
+   (the drafts waiting to be published and the catalogue of decks). The cross-workspace notebook directory is retired from the home. */
+export default function StudyMap({ data, actions = {}, setupHandlers, reveal, onRevealed, children, part = "today" }) {
   const { call, act, busy, askInChat, host } = useStudy();
   const toast = useToast();
   const quick = useQuickActions();
@@ -94,22 +93,11 @@ export default function StudyMap({ data, actions = {}, setupHandlers, notebooks,
   const home = buildHomePlan({ data, today: data.today || { due: 0, weak: 0, new: 0, size: 0 }, runs, runFor, activeJobs, inFocus: folders.inFocus, canChat, revealActivity,
     actions: { start, resume, openDraft, addSource, importLibrary, askInChat, generateFromSources, startCourseFlow, onCoachPractice, onWeakPoints } });
   const drafts = data.drafts || [];
-  const showNotebooks = data.decks.length > 0 || (notebooks?.notebooks?.notebooks || []).some((notebook) => !notebook.current);
   const selectedRun = tree.scope.length ? runFor(tree.scope) : null;
   const deckActions = { start, resume, manage, askInChat, restoreDeck, removeDeck };
   return (
-    <section className="page library-page map-page" ref={pageRef}>
-      {children}
-      <HomeActivity sectionRef={activityRef} jobs={visibleJobs} drafts={drafts} data={data} modelReady={modelReadiness(data).ready}
-        start={start} manage={manage} openDraft={openDraft} openAgent={host.openAgent} cancelJob={cancelJob} dismissJob={dismissJob}
-        retryGeneration={retryGeneration} openModelSettings={openModelSettings} topUpDraft={topUpDraft} />
-      {/* 课程准备: what is done once per course, above the day's work while it is open and one quiet line after. */}
-      <SetupChecklist key={`${data.root}:${data.focus?.course ?? ""}`} data={data} on={setupHandlers} />
-      <div className={"desk" + (home.plan.kind === "empty" ? " is-empty" : "")} data-tour="home-hero">
-        <DeskIntro data={data} home={home} mastery={mastery} role={role} busy={busy} start={start} resume={resume} endRun={endRun}
-          onFocus={onFocus} onCourseSettings={onCourseSettings} onShowOutline={onShowOutline} suggestRole={suggestRole} />
-        <TodayCard plan={home.plan} todayLabel={home.todayLabel} busy={busy} />
-      </div>
+    part === "bank" ? (
+    <section className="page library-page map-page bank-page" ref={pageRef} data-part="bank">
       {/* 待发布 is folded and sits under the day's work, not above it. */}
       <HomeDrafts drafts={drafts} data={data} modelReady={modelReadiness(data).ready} openDraft={openDraft} topUpDraft={topUpDraft} />
       <CatalogHeading count={data.decks.filter((deck) => !!deck.archived === showArchived).length} showArchived={showArchived} hasDecks={data.decks.length > 0}
@@ -134,10 +122,22 @@ export default function StudyMap({ data, actions = {}, setupHandlers, notebooks,
       {folders.parkedFolders.length > 0 && !query && <Button variant="quiet" size="sm" className="show-other-courses parked-toggle" aria-expanded={showParked}
         icon={<Icon name="caret" size={14} className="sh-caret" />}
         onClick={() => setShowParked((value) => !value)}>{uiFormat("未激活的课程 ({0})", [folders.parkedFolders.length])}</Button>}
-      {/* Cross-workspace notebooks are for people with decks, or with notebooks elsewhere (P12). */}
-      {showNotebooks && <NotebookDirectory notebooks={notebooks?.notebooks} error={notebooks?.notebookError} busy={busy} onPublish={notebooks?.publish}
-        onUnpublish={notebooks?.unpublish} onOpen={notebooks?.open} refresh={notebooks?.loadNotebooks} onSearch={notebooks?.search} />}
       <SelectionBar scope={tree.scope} run={selectedRun} busy={busy} onClear={tree.clearSelection} onShowGraph={onShowGraph} onStart={start} onResume={resume} />
     </section>
+    ) : (
+    <section className="page library-page map-page" ref={pageRef} data-part="today">
+      {children}
+      <HomeActivity sectionRef={activityRef} jobs={visibleJobs} drafts={drafts} data={data} modelReady={modelReadiness(data).ready}
+        start={start} manage={manage} openDraft={openDraft} openAgent={host.openAgent} cancelJob={cancelJob} dismissJob={dismissJob}
+        retryGeneration={retryGeneration} openModelSettings={openModelSettings} topUpDraft={topUpDraft} />
+      {/* 课程准备: what is done once per course, above the day's work while it is open and one quiet line after. */}
+      <SetupChecklist key={`${data.root}:${data.focus?.course ?? ""}`} data={data} on={setupHandlers} />
+      <div className={"desk" + (home.plan.kind === "empty" ? " is-empty" : "")} data-tour="home-hero">
+        <DeskIntro data={data} home={home} mastery={mastery} role={role} busy={busy} start={start} resume={resume} endRun={endRun}
+          onFocus={onFocus} onCourseSettings={onCourseSettings} onShowOutline={onShowOutline} suggestRole={suggestRole} />
+        <TodayCard plan={home.plan} todayLabel={home.todayLabel} busy={busy} />
+      </div>
+    </section>
+    )
   );
 }

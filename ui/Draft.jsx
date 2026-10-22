@@ -228,7 +228,7 @@ export default function Draft({
               { id: draft.id, draftVersion: draft.draftVersion },
               () => {
                 clearRecovery();
-                setPage("library");
+                setPage("bank");
               },
             );
           }}

@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { ui, uiFormat } from '../i18n.js';
-import { Combobox, PageHeader } from '../components/index.js';
+import { Button, Combobox, PageHeader } from '../components/index.js';
 import { ExamCountdown } from '../CourseSettings.jsx';
 import { courseEntries } from '../course-picker-entries.js';
 
@@ -33,11 +33,9 @@ export default function CourseHeading({ data, headline, onFocus, onCourseSetting
         }} />, { className: 'course-heading-title' });
   }
   if (!courses.length) return frame(headline, { className: 'course-heading' });
-  // Ranked like every course picker (current, recently used, busiest) with "Course / Chapter" names as a tree; parked courses stay reachable, last.
-  const actions = onCourseSettings && focus.courseId
-    ? [{ id: 'course-settings', label: ui('课程设置…'), icon: 'settings', onSelect: () => onCourseSettings(focus.courseId) }] : [];
   return frame(<>
-      <CourseSwitch data={data} onFocus={onFocus} actions={actions}>{focus.course === '' ? ui('未分类课程') : focus.course || headline}</CourseSwitch>
+      <span>{focus.course === '' ? ui('未分类课程') : focus.course || headline}</span>
       <ExamCountdown course={(data.courses || []).find((course) => course.id === focus.courseId)} />
+      {onCourseSettings && focus.courseId && <Button variant="quiet" size="sm" icon="settings" onClick={() => onCourseSettings(focus.courseId)}>{ui('课程设置…')}</Button>}
     </>, { className: 'course-heading', 'data-tour': 'home-course' });
 }

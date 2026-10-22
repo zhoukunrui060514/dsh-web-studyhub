@@ -2,80 +2,79 @@
 
 @layer study.tokens {
   /* ── Theme tokens ────────────────────────────────────────────────────────
-     "Ink desk": warm near-black surfaces, paper-white type and one cinnabar
-     accent (the red of a teacher's 朱批 and an index card's header rule).
-     Cinnabar is reserved for the single primary action and progress; mastery
-     hues (jade / ochre / rose) only ever carry meaning. Older one-off literals
-     were re-hued to this family with lightness preserved. New rules must
-     reference tokens, not raw colours. */
+     "Clarity" (StudyHub redesign): neutral graphite and white surfaces, one
+     indigo accent reserved for the single primary action, the selection and
+     progress. Cards follow the theme; hierarchy comes from type and space,
+     not from stock or glow. Mastery hues (green / amber / red) only ever
+     carry meaning. New rules must reference tokens, not raw colours. */
   /* The seat carries the tokens too: host overlays (the panel's question
      picker) render beside the app, not inside it. */
   .study-app,
   .study-seat {
     /* dark is the product default */
-    --bg-canvas: #161412;
-    --bg-sunken: #110f0d;
-    --bg-surface: #1e1b18;
-    --bg-raised: #26231f;
-    --bg-glass: #1e1b18f0;
-    --bg-glass-strong: #1e1b18fa;
-    --bg-hover: #fff1dc0b;
-    --bg-selected: #2d2521;
+    --bg-canvas: #111316;
+    --bg-sunken: #0c0e10;
+    --bg-surface: #171a1e;
+    --bg-raised: #1e2227;
+    --bg-glass: #171a1ef0;
+    --bg-glass-strong: #171a1efa;
+    --bg-hover: #ffffff0a;
+    --bg-selected: #232943;
 
-    --line-soft: #f5e6cf12;
-    --line: #332f2a;
-    --line-strong: #4a443c;
+    --line-soft: #ffffff0f;
+    --line: #2a2f36;
+    --line-strong: #3b424b;
 
-    --text: #efe9df;
-    --text-dim: #c5bdb1;
+    --text: #e8ebee;
+    --text-dim: #c3c8cf;
     /* Every --text-* token reaches WCAG AA (4.5:1) on canvas, sunken, surface,
        raised and selected (tests/wp1-tokens). Hierarchy below --text-dim comes
        from size and weight, not from fading words out. */
-    --text-muted: #a59d91;
-    --text-faint: #958e84;
+    --text-muted: #a2a9b2;
+    --text-faint: #9299a2;
     /* Non-text decoration only: status dots, dotted rules, empty rings. */
-    --decor-faint: #6f685e;
+    --decor-faint: #5d646d;
 
-    --accent: #c93d22;
-    --accent-soft: #ec6a4a;
-    --accent-ink: #fff8f2;
+    --accent: #4c5fdc;
+    --accent-soft: #7d8ef0;
+    --accent-ink: #ffffff;
     --accent-glow: color-mix(in srgb, var(--accent) 28%, transparent);
     /* Accent-coloured words and links (AA on every surface). */
-    --accent-text: #ec6a4a;
+    --accent-text: #9eabf8;
 
-    --ok: #5fb58a;
-    --warn: #d9a441;
-    --bad: #d76c93;
-    --info: #86a9c6;
+    --ok: #4cc38a;
+    --warn: #e2a94b;
+    --bad: #f0747c;
+    --info: #52b3d0;
 
     /* The card is the one physical object: paper on the desk. */
-    --paper: #ece4d6;
-    --paper-ink: #201b15;
-    --paper-dim: #5d5448;
-    --paper-rule: #20160c14;
+    --paper: #1e2227;
+    --paper-ink: #e8ebee;
+    --paper-dim: #a2a9b2;
+    --paper-rule: #ffffff14;
     /* A rendered PDF page is white paper in every theme. */
     --pdf-page: #fff;
 
-    --shadow-card: inset 0 1px 0 var(--edge-highlight-paper), 0 0 0 1px var(--paper-rule), 0 2px 4px #00000026, var(--shadow-lg);
-    --radius-card: 16px;
-    --glass-sheen: #fff4e30a;
-    --shadow-sm: 0 1px 2px #0000004d, 0 2px 8px -4px #00000080;
-    --shadow-md: 0 14px 34px -20px #000000d9;
-    --shadow-lg: 0 30px 70px -30px #000000f2;
+    --shadow-card: inset 0 1px 0 var(--edge-highlight-paper), 0 0 0 1px var(--paper-rule), 0 1px 2px var(--edge-shade), var(--shadow-md);
+    --radius-card: 12px;
+    --glass-sheen: #ffffff08;
+    --shadow-sm: 0 1px 2px #00000040;
+    --shadow-md: 0 10px 28px -16px #000000b3;
+    --shadow-lg: 0 24px 56px -28px #000000d9;
     /* Surface edges (docs/design/select-combobox.html 6D): the 1px inner top line of a floating surface, of a resting one, of paper stock, and the ink of the
        hairline ring and the contact shadow. The composites that use them (--shadow-popover ...) are in the semantic block below. */
-    --edge-highlight: #ffffff38;
-    --edge-highlight-soft: #ffffff0f;
-    --edge-highlight-paper: #ffffffb3;
-    --edge-shade: #00000052;
+    --edge-highlight: #ffffff14;
+    --edge-highlight-soft: #ffffff0a;
+    --edge-highlight-paper: #ffffff0f;
+    --edge-shade: #00000066;
     --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 
     /* The stacks themselves are the --font-stack-* block at the end of this file (ui/font-presets.js lists them). */
     --font-ui: var(--font-stack-system);
     --font-display: var(--font-stack-system-display);
 
-    --radius: 12px;
-    --radius-sm: 8px;
+    --radius: 10px;
+    --radius-sm: 6px;
     --radius-pill: 999px;
 
     /* Type scale. 15px is the reading size; 12px is the floor for badges,
@@ -120,52 +119,52 @@
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     color-scheme: dark;
   }
-  /* Light theme: the same desk by daylight — warm paper greys, ink type. */
+  /* Light theme: white surfaces on a cool grey canvas, near-black type. */
   .study-app[data-theme="light"],
   .study-seat:has(> .study-app[data-theme="light"]) {
-    --bg-canvas: #f1ede6;
-    --bg-sunken: #e8e3da;
-    --bg-surface: #faf8f4;
+    --bg-canvas: #f3f4f6;
+    --bg-sunken: #eef0f3;
+    --bg-surface: #ffffff;
     --bg-raised: #ffffff;
-    --bg-glass: #faf8f4f0;
-    --bg-glass-strong: #faf8f4fa;
-    --bg-hover: #2a1c0e0b;
-    --bg-selected: #f5e4dc;
+    --bg-glass: #fffffff0;
+    --bg-glass-strong: #fffffffa;
+    --bg-hover: #0f172a0a;
+    --bg-selected: #eceffd;
 
-    --line-soft: #2a1c0e12;
-    --line: #ddd5c9;
-    --line-strong: #c5bbad;
+    --line-soft: #0f172a0f;
+    --line: #e1e4e9;
+    --line-strong: #c8cdd5;
 
-    --text: #1e1a15;
-    --text-dim: #453e35;
-    --text-muted: #635b51;
-    --text-faint: #6a635a;
-    --decor-faint: #9c9488;
+    --text: #15191e;
+    --text-dim: #373e48;
+    --text-muted: #58606b;
+    --text-faint: #5e6671;
+    --decor-faint: #a2a9b3;
 
-    --accent: #c03a1f;
-    --accent-soft: #d44f2e;
-    --accent-ink: #fffaf5;
+    --accent: #3d4fd6;
+    --accent-soft: #5264e0;
+    --accent-ink: #ffffff;
     --accent-glow: color-mix(in srgb, var(--accent) 20%, transparent);
-    --accent-text: #ad4025;
+    --accent-text: #3446c9;
 
-    --ok: #1e724d;
-    --warn: #8b590f;
-    --bad: #ad3966;
-    --info: #376893;
+    --ok: #0e7747;
+    --warn: #8f5e0a;
+    --bad: #c02d3b;
+    --info: #1d6d89;
 
-    --paper: #fffdf8;
-    --paper-ink: #1e1a15;
-    --paper-dim: #5f574c;
-    --paper-rule: #20160c12;
+    --paper: #ffffff;
+    --paper-ink: #15191e;
+    --paper-dim: #58606b;
+    --paper-rule: #0f172a1a;
 
     --glass-sheen: #ffffffb3;
-    --shadow-sm: 0 1px 2px #2a1c0e14, 0 2px 8px -4px #2a1c0e26;
-    --shadow-md: 0 14px 34px -20px #2a1c0e38;
-    --shadow-lg: 0 30px 70px -30px #2a1c0e45;
+    --shadow-sm: 0 1px 2px #0f172a0f;
+    --shadow-md: 0 10px 28px -16px #0f172a2e;
+    --shadow-lg: 0 24px 56px -28px #0f172a3d;
     /* A white line vanishes on white stock, so by daylight the ring and the contact shadow carry the edge (an ink-tinted hairline) and the highlight is only a trace on cream. */
     --edge-highlight: #ffffff;
     --edge-highlight-soft: #ffffffcc;
-    --edge-shade: #2a1c0e26;
+    --edge-shade: #0f172a1f;
     --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 
     color-scheme: light;

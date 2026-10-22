@@ -48,7 +48,7 @@ export default function AppModalHost() {
           onRemoved={(deck) => {
             set.setRemovingDeck(null);
             if (lib.managedDeck?.id === deck.id) set.setManagedDeck(null);
-            if (nav.page === 'manage') nav.navigate('library');
+            if (nav.page === 'manage') nav.navigate('bank');
             core.notify(ui('题组已永久删除，原始资料和作答记录已保留。'));
           }} />
       )}

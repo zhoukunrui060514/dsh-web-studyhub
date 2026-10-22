@@ -12,9 +12,9 @@ import companionCss from "./skeleton-companion.css";
 import { useInjectCss } from "./shared.js";
 import { groupPrompt } from "./topic-group-prompt.js";
 import { archifySkeletonPrompt, designSkeletonPrompt, extendSkeletonPrompt } from "./agent-prompts/skeleton.js";
-import PageScope, { usePageScope } from './PageScope.jsx';
+import { useCourseScope } from './PageScope.jsx';
 import { Badge, Button, Chip, ConfirmDialog, DisclosureToggle, InlineMessage, LoadingState, PageHeader, Panel, SegmentedControl, foldLabel } from "./components/index.js";
-import { courseGroupRows, classifySkeletonError, openSkeleton, focusSurvivesCourse } from "./skeleton-groups.js";
+import { courseGroupRows, classifySkeletonError, openSkeleton } from "./skeleton-groups.js";
 import { useStudy } from "./study-context.jsx";
 import { formatDateTime } from './format.js';
 
@@ -71,7 +71,7 @@ export default function Skeleton({ data, onPractice, focusId, onFocus }) {
   const { call, busy, askInChat } = useStudy();
   useInjectCss(css, "study-skeleton");
   useInjectCss(companionCss, "study-skeleton-companion");
-  const [course, setCourse] = usePageScope(data?.root, 'skeleton', data?.focus?.course ?? '*');
+  const [course] = useCourseScope();
   const [saved, setSaved] = useState(null);
   const [topics, setTopics] = useState(null),
     [groupView, setGroupView] = useState(null),
@@ -99,14 +99,6 @@ export default function Skeleton({ data, onPractice, focusId, onFocus }) {
     const result = classifySkeletonError(e);
     if (result.kind === "stale") { setStale(true); onFocus(null); } else setError(result.text);
   };
-  const chooseCourse = (next) => {
-    setCourse(next);
-    setStale(false);
-    setError("");
-    // The open skeleton stays only when the new course lists it.
-    if (focusId) focusSurvivesCourse(call, focusId, next).then((keep) => { if (!keep) onFocus(null); });
-  };
-
   useEffect(() => {
     let live = true;
     setTopics(null);
@@ -262,8 +254,7 @@ export default function Skeleton({ data, onPractice, focusId, onFocus }) {
 
   return (
     <section className="page skeleton-page">
-      <PageHeader title={ui("知识骨架")} description={ui("同一个主题常常散在好几个题组里。选好主题，先做质量检测，再交给对话把名词串成结构、修掉只能死记的题。")}
-        scope={<PageScope courses={data?.focus?.courses} value={course} onChange={chooseCourse} />} />
+      <PageHeader title={ui("知识骨架")} description={ui("同一个主题常常散在好几个题组里。选好主题，先做质量检测，再交给对话把名词串成结构、修掉只能死记的题。")} />
       {error && (
         <InlineMessage tone="error" boxed className="sk-msg" action={{ label: ui("重试"), onClick: () => { setError(""); setReload((n) => n + 1); } }}>{error}</InlineMessage>
       )}

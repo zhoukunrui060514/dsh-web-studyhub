@@ -6,7 +6,7 @@ import { useInjectCss, plainPrompt } from "./shared.js";
 import { usePolling } from "./use-polling.js";
 import EmptyStudyActions from "./EmptyStudyActions.jsx";
 import { RubricSkills } from "./CaseResult.jsx";
-import PageScope, { decksInCourse, usePageScope, useShowInactive, scopeArgs } from './PageScope.jsx';
+import { decksInCourse, useCourseScope, useShowInactive, scopeArgs } from './PageScope.jsx';
 import { Banner, Button, Combobox, DisclosureToggle, foldLabel, EmptyState, ErrorState, Icon, InlineMessage, LoadingState, PageHeader, SegmentedControl, TextInput, Tooltip, Chip } from './components/index.js';
 import ModelSetupGate from './ModelSetupGate.jsx';
 import { NO_FILTER, RECS_PREVIEW, STATUS_KINDS, VARIANT_BATCH_CAP, deckChoices, filterActive, filterRows, groupRows, groupSummaryText, readGroupBy, readOpenGroups, reasonText, retrainOptions,
@@ -322,7 +322,6 @@ export function WrongBookView({
           {counts.total ? uiFormat('客观答错 {0} 题 · 自评未掌握 {1} 题 · 口头评估待巩固 {2} 题。', [counts.graded, counts.self, counts.oral]) : ui('客观答错、自评未掌握或口头评估待巩固的题会收在这里。')}
           {counts.rubric > 0 && uiFormat('按评分标准批改未达标 {0} 题。', [counts.rubric])}
         </>}
-        scope={<PageScope courses={data?.focus?.courses} value={course} onChange={onCourse} showInactive={showInactive} onShowInactive={onShowInactive} />}
         actions={<Button variant="secondary" icon="refresh" onClick={() => onReload(page)} disabled={busy || loading}>{ui("刷新")}</Button>} />
 
       {err && <ErrorState error={items ? uiFormat("读取失败，仍显示上次结果：{0}", [err]) : err} onRetry={busy || loading ? undefined : () => onReload(page)} />}
@@ -553,7 +552,7 @@ export function WrongBookView({
 
 export default function WrongBook({ data, onPractice, onPracticePrepared, onOpenSettings, onLibrary, onCreate, onSources }) {
   const { call, busy, openSettings } = useStudy();
-  const [course, setCourse] = usePageScope(data?.root, 'wrongbook', data?.focus?.course ?? '*');
+  const [course, setCourse] = useCourseScope();
   const [showInactive, setShowInactive] = useShowInactive(data?.root, 'wrongbook');
   const key = JSON.stringify(scopeArgs(course, showInactive));
   const [page, setPage] = useState(0);

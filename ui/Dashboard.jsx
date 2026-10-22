@@ -6,7 +6,7 @@ import chartCss from "./charts/charts.css";
 import { useInjectCss } from "./shared.js";
 import EmptyStudyActions from "./EmptyStudyActions.jsx";
 import { RubricSkills } from "./CaseResult.jsx";
-import PageScope, { decksInCourse, usePageScope, useShowInactive, scopeArgs } from './PageScope.jsx';
+import { decksInCourse, useCourseScope, useShowInactive, scopeArgs } from './PageScope.jsx';
 import { useCourseActive } from './CourseActive.jsx';
 import { ForecastPanel, MasteryPanel, TrendPanel } from "./charts/DashboardCharts.jsx";
 import { shortDeckTitles } from "./charts/chart-math.js";
@@ -171,8 +171,8 @@ export default function Dashboard({ data, onStartScope, onLibrary, onCreate, onS
   const { call, busy } = useStudy();
   useInjectCss(css, "study-views");
   useInjectCss(chartCss, "study-dash-charts");
-  const [course, setCourse] = usePageScope(data?.root, 'dashboard', data?.focus?.course ?? '*');
-  const [showInactive, setShowInactive] = useShowInactive(data?.root, 'dashboard');
+  const [course] = useCourseScope();
+  const [showInactive] = useShowInactive(data?.root, 'dashboard');
   const courseActive = useCourseActive();
   const scopeKey = JSON.stringify(scopeArgs(course, showInactive));
   const [savedStats, setStats] = useState(null),
@@ -202,7 +202,6 @@ export default function Dashboard({ data, onStartScope, onLibrary, onCreate, onS
   return (
     <section className="page dash">
       <PageHeader title={ui("学习统计")}
-        scope={<PageScope courses={data?.focus?.courses} value={course} onChange={setCourse} showInactive={showInactive} onShowInactive={setShowInactive} />}
         actions={<Button variant="quiet" icon="refresh" onClick={load} busy={loading} busyLabel={ui("统计中…")}>{ui("刷新")}</Button>} />
 
       {err && <ErrorState error={err} onRetry={load} />}

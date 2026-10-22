@@ -1,7 +1,18 @@
-import React, { useContext, useState } from 'react';
+import React, { createContext, useContext, useLayoutEffect, useState } from 'react';
 import { ui, uiFormat } from './i18n.js';
 import { browserSession, readJSON, removeKey, writeJSON } from './storage.js';
 import { AppContext } from './app/app-context.js';
+
+/** The visible editor can keep a course change pending until its existing unsaved-work confirmation resolves. */
+export const CourseChangeContext = createContext(null);
+export function useCourseChangeGuard(guard) {
+  const slot = useContext(CourseChangeContext);
+  useLayoutEffect(() => {
+    if (!slot) return undefined;
+    slot.current = guard;
+    return () => { if (slot.current === guard) slot.current = null; };
+  }, [slot, guard]);
+}
 import { courseScope, courseSegments, courseTree } from '../lib/course-tree.js';
 import { isParked, parkedWithin, useCourseActive } from './CourseActive.jsx';
 import { useInjectCss } from './shared.js';
@@ -48,6 +59,17 @@ export function useShowInactive(root, page) {
 
 /** The arguments a page sends with its scope: the course, and `includeInactive` when the learner chose to show parked courses. */
 export const scopeArgs = (course, showInactive = false) => showInactive ? { course, includeInactive: true } : { course };
+
+/**
+ * The course a page shows (the redesign's L0): the current course, picked once in the top bar, for every page; `*` while there is none.
+ * The setter changes the current course itself, so a page that offers a course choice of its own moves every page with it.
+ */
+export function useCourseScope() {
+  const app = useContext(AppContext);
+  const value = app?.data?.focus?.course ?? '*';
+  const choose = (next) => { void app?.core?.act?.('focus.set', { course: next }); };
+  return [value, choose];
+}
 
 /**
  * Unchosen follows the visible default; explicit all (*) and unassigned ('') persist per library/page.

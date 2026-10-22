@@ -44,7 +44,7 @@ test('an old browser keeps its look, and the new settings are saved in the exist
   const storage = memory();
   saveAppearance({ theme: 'paper', contrast: 'high', density: 'comfortable', radius: 'sharp' }, storage);
   assert.equal(storage.map.get('study-theme'), 'paper', 'the theme key stays one plain string');
-  assert.deepEqual(JSON.parse(storage.map.get('study-interface')), { motion: 'auto', scale: 100, font: 'system', fontTitle: 'follow', fontCustom: '', accent: 'cinnabar', contrast: 'high', density: 'comfortable', radius: 'sharp' });
+  assert.deepEqual(JSON.parse(storage.map.get('study-interface')), { motion: 'auto', scale: 100, font: 'system', fontTitle: 'follow', fontCustom: '', accent: 'indigo', contrast: 'high', density: 'comfortable', radius: 'sharp' });
   assert.deepEqual(loadAppearance(storage), { ...APPEARANCE_DEFAULTS, theme: 'paper', contrast: 'high', density: 'comfortable', radius: 'sharp' });
 });
 
@@ -183,22 +183,16 @@ test('the extra palettes override tokens only: colours, shadows and the glass fi
   }
 });
 
-test('palettes keep the cinnabar identity: the accent stays red-orange, no blue-violet hue anywhere in the new colours', () => {
-  const hue = hex => {
-    const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
-    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
-    if (!d) return null;
-    const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
-    return (h * 60 + 360) % 360;
-  };
+test('palettes keep the default accent and stay neutral: OLED surfaces carry no hue, and neither palette re-colours the accent', () => {
   for (const value of ['oled', 'paper']) {
     const decls = Object.assign({}, ...forAttr('data-palette', value).map(rule => rule.decls));
+    assert.equal(decls['--accent'], undefined, `${value} keeps the accent of the preset`);
+    if (value !== 'oled') continue;
     for (const [name, number] of Object.entries(decls)) {
-      if (!/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(number) || /^--(info)$/.test(name)) continue;
-      const degrees = hue(number);
-      if (degrees !== null) assert.ok(!(degrees >= 230 && degrees <= 300), `${value} ${name} ${number} is blue-violet (${degrees.toFixed(0)}deg)`);
+      if (!/^--(bg|line)/.test(name) || !/^#[0-9a-f]{6}/i.test(number) || name === '--bg-selected') continue;
+      const [r, g, b] = [1, 3, 5].map(i => parseInt(number.slice(i, i + 2), 16));
+      assert.ok(Math.max(r, g, b) - Math.min(r, g, b) <= 12, `oled ${name} ${number} stays a neutral grey`);
     }
-    if (decls['--accent']) { const degrees = hue(decls['--accent']); assert.ok(degrees < 20 || degrees > 340, `${value} accent stays cinnabar`); }
   }
 });
 
@@ -261,8 +255,8 @@ test('设置 › 界面 offers the new themes, contrast, density and corner styl
   } finally { setUiLanguage('zh'); }
 });
 
-test('App wires the three handlers and keeps the sidebar toggle on the three-step cycle', async () => {
+test('App wires appearance controls through Settings', async () => {
   const app = await readAppSource();
   for (const key of ['contrast', 'density', 'radius']) assert.match(app, new RegExp(`on${key[0].toUpperCase()}${key.slice(1)}: \\(value\\) => updateAppearance\\(\\{ ${key}: value \\}\\)`), key);
-  assert.match(app, /THEME_CYCLE/, 'the toggle cycles the short list, oled and paper are chosen in Settings');
+  assert.doesNotMatch(app, /className="nav theme-cycle"/, 'appearance controls live in Settings');
 });

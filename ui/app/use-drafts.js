@@ -26,7 +26,7 @@ export async function publishAndPractice({ call, act, toast, draft, intoDeck, sa
       }
     } catch {
       if (isCurrent()) {
-        setPage?.('library');
+        setPage?.('bank');
         toast?.success(ui('题组已发布；当前没有可开始的新题。'));
       }
     }

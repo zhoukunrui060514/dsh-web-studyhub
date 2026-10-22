@@ -12,26 +12,16 @@
     --paper-radius: var(--radius-card);
     :is(.sh-paper, .sh-paper-card, .flash-area .question-meta, .flash-area .card-progress,
       .study-document-viewer[data-tone='paper'] .reader-page, .study-reading[data-tone='paper']) {
+      /* Clarity: the card follows the theme. Only the stock and the fills drawn on it are re-scoped, so a tinted note or a hover on a card
+         stays a step away from the card itself; the text, lines and tones are the theme's own. */
       --text: var(--paper-ink);
-      --text-dim: #463e34;
       --text-muted: var(--paper-dim);
-      --text-faint: #6c6459;
-      --decor-faint: #867d70;
-      --line: #20160c26;
-      --line-soft: #20160c14;
-      --line-strong: #20160c40;
-      --bg-hover: #20160c0b;
-      --bg-surface: #20160c08;
-      --bg-sunken: #20160c0d;
+      --bg-surface: color-mix(in srgb, var(--paper-ink) 3%, var(--paper));
+      --bg-sunken: color-mix(in srgb, var(--paper-ink) 5%, var(--paper));
       --bg-raised: var(--paper);
-      --bg-selected: color-mix(in srgb, var(--accent) 8%, transparent);
-      --accent-soft: color-mix(in srgb, var(--accent) 89%, black);
+      --bg-selected: color-mix(in srgb, var(--accent) 10%, var(--paper));
       --accent-glow: color-mix(in srgb, var(--accent) 20%, transparent);
-      --ok: #2c7a53;
-      --warn: #93600f;
-      --bad: #a8345f;
-      --info: #3b6f9c;
-      --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+      --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
       /* The tones are derived from the ones above, so they are rebuilt where those change. */
       --ok-ink: color-mix(in srgb, var(--ok) 82%, var(--text));
       --ok-bg: color-mix(in srgb, var(--ok) 8%, var(--bg-surface));
@@ -67,7 +57,6 @@
       --info-tint: color-mix(in srgb, var(--info) 22%, var(--bg-surface));
       --info-solid: color-mix(in srgb, var(--info) 70%, var(--bg-surface));
       color: var(--text);
-      color-scheme: light;
     }
   }
 }

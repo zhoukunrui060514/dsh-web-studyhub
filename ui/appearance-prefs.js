@@ -24,9 +24,10 @@ export const MOTIONS = Object.freeze(['auto', 'full', 'reduced', 'off']);
 export const SCALES = Object.freeze([90, 100, 110, 125, 150, 175, 200]);
 /** The presets of ui/font-presets.js, then `custom`: the name of an installed font typed in `fontCustom` (gated by cleanFontName). */
 export const FONTS = Object.freeze([...FONT_IDS, 'custom']);
-/** The accent colours (强调色, ui/accent.css): cinnabar is the default and needs no override; there is no free colour picker, so contrast stays verifiable. */
-export const ACCENTS = Object.freeze(['cinnabar', 'jade', 'ochre', 'graphite', 'plum']);
-export const APPEARANCE_DEFAULTS = Object.freeze({ theme: 'auto', motion: 'auto', scale: 100, font: 'system', fontTitle: 'follow', fontCustom: '', accent: 'cinnabar', contrast: 'auto', density: 'standard', radius: 'standard' });
+/** The accent colours (强调色, ui/accent.css): indigo is the default and needs no override; there is no free colour picker, so contrast stays verifiable.
+ *  The redesign renamed the old default (cinnabar) to `vermilion`, so a stored `cinnabar` falls back to the new default instead of pinning the old look. */
+export const ACCENTS = Object.freeze(['indigo', 'vermilion', 'jade', 'ochre', 'graphite']);
+export const APPEARANCE_DEFAULTS = Object.freeze({ theme: 'auto', motion: 'auto', scale: 100, font: 'system', fontTitle: 'follow', fontCustom: '', accent: 'indigo', contrast: 'auto', density: 'standard', radius: 'standard' });
 /** Per setting, its allowed values (in display order): the whitelist and the option list of the settings page. */
 export const APPEARANCE_OPTIONS = Object.freeze({ theme: THEMES, motion: MOTIONS, scale: SCALES, font: FONTS, fontTitle: TITLE_MODES, accent: ACCENTS, contrast: CONTRASTS, density: DENSITIES, radius: RADII });
 /** A setting that is typed, not picked: its own gate instead of a list of values. */
@@ -37,7 +38,7 @@ export const APPEARANCE_LABELS = Object.freeze({
   motion: { auto: '跟随系统', full: '标准', reduced: '减弱', off: '无动画' },
   font: { ...Object.fromEntries(FONT_IDS.map(id => [id, FONT_PRESETS[id].label])), custom: '本机字体' },
   fontTitle: { follow: '跟随正文', system: '保持系统' },
-  accent: { cinnabar: '朱砂', jade: '青玉', ochre: '赭石', graphite: '墨灰', plum: '梅紫' },
+  accent: { indigo: '靛蓝', vermilion: '朱砂', jade: '青玉', ochre: '赭石', graphite: '墨灰' },
   contrast: { auto: '跟随系统', standard: '标准', high: '高对比' },
   density: { compact: '紧凑', standard: '标准', comfortable: '宽松' },
   radius: { sharp: '利落', standard: '标准', soft: '圆润' },

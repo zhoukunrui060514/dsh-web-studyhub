@@ -6,7 +6,7 @@ import { useInjectCss } from "./shared.js";
 import { createWriteQueue } from "./async.js";
 import { LIMIT_MINUTES, defaultLimitMinutes, examLimitMs } from "../lib/exam-timing.js";
 import OralExam from "./OralExam.jsx";
-import { decksInCourse, usePageScope, useShowInactive, scopeArgs } from './PageScope.jsx';
+import { decksInCourse, useCourseScope, usePageScope, useShowInactive, scopeArgs } from './PageScope.jsx';
 import { practiceArgs, readExamTarget } from './learning-navigation.js';
 import { CasePaper } from './CaseWorkspace.jsx';
 import SubmitBlanksDialog from './SubmitBlanksDialog.jsx';
@@ -34,7 +34,7 @@ export default function Exam({ data, onExit, onCreate, onCreateCase, onStartRun,
   const { call } = useStudy();
   useInjectCss(css, "study-views");
   useInjectCss(caseCss, "study-case-workspace");
-  const [course, setCourse] = usePageScope(data?.root, 'exam', data?.focus?.mode === 'interview' ? '*' : data?.focus?.course ?? '*');
+  const [course, setCourse] = useCourseScope();
   const [showInactive, setShowInactive] = useShowInactive(data?.root, 'exam');
   const [deckChoice, setDeckChoice] = usePageScope(data?.root, 'exam-decks', '');
   // The time limit the learner chose for this course (kept for this tab like the decks); unchosen follows the course's own 作答时间.

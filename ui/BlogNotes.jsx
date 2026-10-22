@@ -5,7 +5,7 @@ import { markdown } from "@codemirror/lang-markdown";
 import noteCss from "./blog-notes.css";
 import { useInjectCss } from "./shared.js";
 import { renderNoteMarkdown } from "./note-markdown.js";
-import PageScope, { courseMatcher, usePageScope } from './PageScope.jsx';
+import { courseMatcher, useCourseScope, usePageScope } from './PageScope.jsx';
 import { draftKey, readDraft, writeDraft, clearDraft } from './writing-drafts.js';
 import { ReadingBlock, ReadingSettingsButton } from "./reading-settings/ReadingSettings.jsx";
 import LocalImagePicker from './LocalImagePicker.jsx';
@@ -31,7 +31,7 @@ export default function BlogNotes({ data, initialId, onSelect, onBack, backLabel
   useInjectCss(noteCss, "study-blog-notes");
   const [rememberedId, rememberId] = usePageScope(data.root, 'notes-open', '');
   const [id, changeId] = useState(initialId || rememberedId), [note, setNote] = useState(null);
-  const [course, setCourse] = usePageScope(data.root, 'notes', data.focus?.course ?? '*');
+  const [course] = useCourseScope();
   const [saving, setSaving] = useState(false), [publishing, setPublishing] = useState(false), [serverVersion, setServerVersion] = useState(null);
   const current = useRef(null), identity = useRef(null), pending = useRef(false);
   const setId = next => { changeId(next); rememberId(next); onSelect?.(next); };
@@ -197,7 +197,6 @@ export default function BlogNotes({ data, initialId, onSelect, onBack, backLabel
     <PageHeader className={`note-heading${note && !editing && note.markdown ? ' note-heading-reading' : ''}`}
       back={note ? { label: ui('全部笔记'), onClick: () => { setId(''); setLookup(null); } } : undefined}
       title={note?.title || ui('学习笔记')} titleProps={{ tabIndex: -1, 'data-context-heading': true }}
-      scope={!note ? <PageScope courses={data.focus?.courses} value={course} onChange={setCourse} /> : undefined}
       description={daily ? <span className="note-daily-meta">{note.daily?.day} · {note.daily?.course} · {uiFormat('已练习 {0} 题 · 需要回顾 {1} 题', [note.daily?.answeredCount, note.daily?.wrongCount])}</span> : undefined}
       actions={<>
         {!note && <ReadingSettingsButton />}
@@ -224,7 +223,7 @@ export default function BlogNotes({ data, initialId, onSelect, onBack, backLabel
               ? [...picked, { deckId: item.deckId, cardId: item.cardId }]
               : picked.filter((ref) => ref.cardId !== item.cardId))} />
           {item.prompt}</label>)}
-        <Button variant="primary" disabled={!newTitle.trim() || !picked.length}
+        <Button variant="secondary" disabled={!newTitle.trim() || !picked.length}
           onClick={() => act("note.create", { title: newTitle, cards: picked }, (created) => {
             setId(created.id); setPicked([]); setNewTitle(""); setResults([]);
           })}>{uiFormat("创建笔记草稿 · {0} 题", [picked.length])}</Button>

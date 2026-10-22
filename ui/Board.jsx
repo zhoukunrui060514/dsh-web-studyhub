@@ -299,7 +299,7 @@ export default function Board({ state, library, today: todayProp, onOrigin, onSt
         {(total > 0 || filtering) && <FilterBar query={query} labels={labels} onChange={setQuery} open={filterOpen} onToggle={() => setFilterOpen(!filterOpen)} matched={matched} total={total} />}
         {total === 0 && !archive && <EmptyState icon="check" title={ui("还没有待办")} className="board-empty"
           description={ui("把想做的事记在这里。在复习、题目或学习流里点「加入待办」，会把当前内容一起记下来。")}
-          primary={{ label: ui("添加第一张卡片"), icon: "plus", disabled: readOnly, onClick: () => setComposer(board.columns[0].id) }} />}
+          secondary={{ label: ui("添加第一张卡片"), icon: "plus", disabled: readOnly, onClick: () => setComposer(board.columns[0].id) }} />}
         {filtering && matched === 0 && total > 0 && <EmptyState size="sm" icon={<Icon name="search" size={22} />} title={ui("没有符合筛选的卡片")} className="board-empty"
           secondary={{ label: ui("清除筛选"), onClick: () => setQuery({}) }} />}
         <div className="board-columns" style={{ "--board-cols": board.columns.length }}>

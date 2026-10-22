@@ -72,7 +72,14 @@ export function useBookPlace({ root, course, book, rows, toc, steps, chapters, r
     // The page is still rising into place (shell.css page-in: a few pixels of translateY), which moves every rectangle measured below by what is left of it.
     element.closest('.page')?.getAnimations?.().forEach(animation => animation.finish());
     const scroller = scrollerOf(element), top = scroller === document.scrollingElement ? 0 : scroller.getBoundingClientRect().top;
-    if (wanted.offset !== null && wanted.offset !== undefined) instant(scroller, scroller.scrollTop + element.getBoundingClientRect().top - wanted.offset);
+    let frame = 0;
+    if (wanted.offset !== null && wanted.offset !== undefined) {
+      const align = () => instant(scroller, scroller.scrollTop + element.getBoundingClientRect().top - wanted.offset);
+      align();
+      // A newly mounted reading surface can still grow during its first layout (the sticky bar and its controls settle).
+      // If the first scroll hit that temporary boundary, align once more before the next paint.
+      if (Math.abs(element.getBoundingClientRect().top - wanted.offset) > 1) frame = requestAnimationFrame(() => { if (element.isConnected) align(); });
+    }
     else {
       // A jump: the point just under the book bar, which sticks once the page has scrolled (put where it sticks now and measured after the first move: the
       // app's top bar may have come back or gone). One jump, not smooth.
@@ -89,6 +96,7 @@ export function useBookPlace({ root, course, book, rows, toc, steps, chapters, r
       heading.focus({ preventScroll: true });
       setTimeout(() => heading.removeAttribute('data-return-focus'), 1500);
     }
+    return () => cancelAnimationFrame(frame);
   });
 
   // 整章连着读: the heading being read is the highest one on screen of the open chapters (逐节读: the point shown, set where it changes).

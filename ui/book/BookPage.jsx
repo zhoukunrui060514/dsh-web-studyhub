@@ -3,6 +3,7 @@ import { ui, uiFormat } from '../i18n.js';
 import { Button, EmptyState, ErrorState, LoadingState } from '../components/index.js';
 import { usePersistentState, readText, removeKey } from '../storage.js';
 import { useStudy } from '../study-context.jsx';
+import { useCourseChangeGuard } from '../PageScope.jsx';
 import { useInjectCss } from '../shared.js';
 import { useNarrow } from '../use-narrow.js';
 import ModelSetupGate from '../ModelSetupGate.jsx';
@@ -86,6 +87,7 @@ export default function BookPage({ data, onBack, onPractice, onOpenSource, onCre
   // Leaving the editor with unsaved text asks first (the 完成 button, 回到总纲, another course; closing or reloading the tab: the browser's own question).
   // The sidebar and the other pages do not ask yet (no navigation guard in the app; S4 saves as you type).
   const guard = useCallback(then => (view === 'edit' && dirty ? setLeaving(() => then) : then()), [view, dirty]);
+  useCourseChangeGuard(guard);
   useUnsavedWarning(view === 'edit' && dirty);
   const back = useCallback(() => { setLeaving(null); setDirty(false); setView('read'); }, []);
   // The editor and 翻看 take the page's place; 完成 · 回到阅读 comes back to the heading being read where it was on screen (held until it is drawn again).

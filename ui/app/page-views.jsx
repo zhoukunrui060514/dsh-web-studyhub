@@ -1,4 +1,10 @@
 import React, { useEffect } from 'react';
+import TodayPage from '../learning/TodayPage.jsx';
+import CurriculumPage from '../learning/CurriculumPage.jsx';
+import RecordsPage from '../learning/RecordsPage.jsx';
+import ReinforcementPage from '../learning/ReinforcementPage.jsx';
+import ActivityPage from '../learning/ActivityPage.jsx';
+import ProcessingPlan from '../learning/ProcessingPlan.jsx';
 import { ui, uiFormat, setUiLanguage, errorMessage } from '../i18n.js';
 import { pageAvailable } from '../capabilities.js';
 import { pageFlag } from '../pages.js';
@@ -41,8 +47,8 @@ import { retryForm, retryNotice } from './retry-generation.js';
 /* One adapter per page: the registry (ui/pages.js) names the page, this file maps it to the component and says which of the app's
    state and verbs the component is given. A page owned by someone else keeps its props; the adapter is the only place that knows them. */
 
-function LibraryView() {
-  const { data, core, nav, set, session, intents, drafts, notebooks, tour, dailyPlan, settingsEntry, learn } = useApp();
+function LibraryView({ part = 'today' }) {
+  const { data, core, nav, set, session, intents, drafts, tour, dailyPlan, settingsEntry, learn } = useApp();
   const { busy, notify } = core;
   /* 期末一周 (M7): a course's book at a point, in 翻看 or with 今天读哪几节 open; another course than the current one is made current first (the book
      page shows the current course's book). 练 5 道 practises the point's next five, in a practice round's order. */
@@ -64,15 +70,15 @@ function LibraryView() {
     } catch (failure) { notify({ text: errorMessage(failure), tone: 'error' }); }
   };
   const startMock = (run) => { learn.rememberContext(learn.captureContext()); session.enterRun(run); };
-  if (tour.showWelcome) return (
+  if (part === 'today' && tour.showWelcome) return (
     <Welcome model={tour.modelState} sample={data.sample} busy={busy || tour.sampleBusy} onStartSample={tour.loadSampleAndTour}
       onStartTour={() => tour.startTour({ restart: true })} onImport={tour.openFirstImport} onSetupModel={settingsEntry.openModelSettings}
       onRemoveSample={() => tour.setRemovingSample(true)} onLater={tour.hideWelcome} />
   );
   return (
     <>
-      {data.sample?.loaded && <SampleBanner sample={data.sample} busy={busy || tour.sampleBusy} onTour={() => tour.startTour({ restart: true })} onRemove={() => tour.setRemovingSample(true)} />}
-      <StudyMap data={data} setupHandlers={createSetupHandlers({ data, nav, set, intents, drafts, settingsEntry })} notebooks={notebooks}
+      {part === 'today' && data.sample?.loaded && <SampleBanner sample={data.sample} busy={busy || tour.sampleBusy} onTour={() => tour.startTour({ restart: true })} onRemove={() => tour.setRemovingSample(true)} />}
+      <StudyMap part={part} data={data} setupHandlers={createSetupHandlers({ data, nav, set, intents, drafts, settingsEntry })}
         reveal={intents.revealHome} onRevealed={() => intents.setRevealHome(0)}
         actions={{
           start: intents.startReview, resume: intents.openRun, manage: intents.openDeck, removeDeck: (id) => set.setRemovingDeck({ id, root: data.root }),
@@ -92,13 +98,18 @@ function LibraryView() {
           onCourseSettings: settingsEntry.setCourseSettings,
           onShowOutline: pageAvailable(data, 'outline') ? () => nav.navigate('outline') : undefined,
         }}>
-        {pageAvailable(data, 'review') && <DailyPlan key={`${data.root}:${dailyPlan.date}`} plan={dailyPlan} primaryAction={false} onBoard={() => nav.navigate('board')}
+        {part === 'today' && pageAvailable(data, 'review') && <DailyPlan key={`${data.root}:${dailyPlan.date}`} plan={dailyPlan} primaryAction={false} onBoard={() => nav.navigate('board')}
           modelReady={data.model?.ready !== false} openModelSettings={settingsEntry.openModelSettings} />}
-        {pageAvailable(data, 'book') && <CrunchCard data={data} onOpenBook={openCrunchBook} onPractice={practiseCrunch} onExamRun={startMock} />}
-        <RecoveryBanner />
+        {part === 'today' && pageAvailable(data, 'book') && <CrunchCard data={data} onOpenBook={openCrunchBook} onPractice={practiseCrunch} onExamRun={startMock} />}
+        {part === 'today' && <RecoveryBanner />}
       </StudyMap>
     </>
   );
+}
+
+/** 练习 › 题库: the drafts waiting to be published and the catalogue of decks, split off the old home (ui/StudyMap.jsx part="bank"). */
+function BankView() {
+  return <LibraryView part="bank" />;
 }
 
 function WorkflowsView() {
@@ -169,11 +180,11 @@ function ManageView() {
 function SourcesView() {
   const { data, host, nav, lib, set, learn, sources, intents, settingsEntry } = useApp();
   return (
-    <Sources key={data.root} data={data} setModal={set.setModal} sourceForm={<SourceForm />}
+    <><ProcessingPlan /><Sources key={data.root} data={data} setModal={set.setModal} sourceForm={<SourceForm />}
       highlight={lib.sourceHighlight} openAgent={host.openAgent} onOpenSources={learn.openAudioSources}
       onLegacyRetry={(job) => { set.setLegacyAudioJobId(job.id); nav.navigate('audio'); }}
       onOpenSettings={(section) => settingsEntry.openSettings(section === 'settings-marker' ? section : 'settings-mineru')} onBuildIndex={(course) => openIndexBuilder(settingsEntry.openSettings, course)} onGenerate={sources.generateFromSources}
-      onPractice={(scope) => intents.practice(scope)} />
+      onPractice={(scope) => intents.practice(scope)} /></>
   );
 }
 
@@ -375,10 +386,11 @@ function KnowledgeView() {
   return <Knowledge key={data.root} openSource={evidence => learn.openSourceAt(evidence.sourceId, evidence.start, evidence)} openTasks={() => nav.navigate('tasks')} />;
 }
 export const PAGE_VIEWS = {
+  records: RecordsPage,
   knowledge: KnowledgeView,
-  library: LibraryView, workflows: WorkflowsView, skeleton: SkeletonView, dashboard: DashboardView, exam: ExamView, wrongbook: WrongBookView, graph: GraphView,
-  manage: ManageView, sources: SourcesView, audio: AudioView, tasks: TasksView, generate: GenerateView, draft: DraftView, settings: SettingsView, review: ReviewView, notes: NotesView,
-  examprep: ExamPrepView, outline: OutlineView, book: BookView,
+  library: TodayPage, bank: BankView, workflows: WorkflowsView, skeleton: SkeletonView, dashboard: DashboardView, exam: ExamView, wrongbook: () => <ReinforcementPage legacy={<WrongBookView />} />, graph: GraphView,
+  manage: ManageView, sources: SourcesView, audio: AudioView, tasks: () => <ActivityPage consoleView={<TasksView />} />, generate: GenerateView, draft: DraftView, settings: SettingsView, review: ReviewView, notes: NotesView,
+  examprep: ExamPrepView, outline: OutlineView, book: () => <CurriculumPage reader={<BookView />} />,
 };
 
 /** 备考补习 while the learner has it turned off in Settings (the switch is not a component, so the generic text about components would be wrong). */

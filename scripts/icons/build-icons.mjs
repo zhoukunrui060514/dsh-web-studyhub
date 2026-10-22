@@ -91,6 +91,13 @@ export const ICON_MAP = {
   'nav-language': 'globe',
   'nav-light': 'sun',
   'nav-tour': 'compass',
+  // The five spaces of the redesign (ui/spaces.js) and the shell's activity centre.
+  'nav-today': 'sun-horizon',
+  'nav-knowledge': 'tree-structure',
+  'nav-practice': 'pencil-line',
+  'nav-records': 'notebook',
+  'nav-bank': 'cards',
+  activity: 'bell-simple',
 };
 
 const attr = (tag, name) => new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1];

@@ -3,6 +3,7 @@
    App composes: its hooks (ui/app/use-*.js, ui/review/useReviewSession.js) own the state and the verbs, the shell parts
    (ui/app/App*.jsx) draw the sidebar, top bar and dialogs, and ui/app/page-views.jsx maps each page of ui/pages.js to its component. */
 import React, { useMemo, useRef } from 'react';
+import LearningProvider from './learning/LearningProvider.jsx';
 import { LiveClass } from './workspace-views.jsx';
 import { pageAvailable } from './capabilities.js';
 import { ui, useUiLanguage } from './i18n.js';
@@ -47,6 +48,9 @@ import { freshGeneration, initialGeneration, useLibraryConnection } from './app/
 import { useReviewSession } from './review/useReviewSession.js';
 import { shellTitleOf } from './app/shell-title.js';
 import AppSidebar from './app/AppSidebar.jsx';
+import SpaceHeader from './app/SpaceHeader.jsx';
+import { useRememberView, useSpaces } from './app/use-spaces.js';
+import { CourseChangeContext } from './PageScope.jsx';
 import AppTopbar from './app/AppTopbar.jsx';
 import AppModalHost, { readerOpen } from './app/AppModalHost.jsx';
 import { ContextReturn, IngestBanner, StorageIssuesBanner } from './app/AppBanners.jsx';
@@ -74,6 +78,7 @@ export default function App({ call: transportCall, host = NO_HOST }) {
   const [lib, set] = useLibraryState({ gen: initialGeneration(host, language) });
   const handle = { state: lib, set };
   const late = useRef({});
+  const courseChangeGuard = useRef(null);
   const nav = useNavigation({ core, lib: handle, motion: shell.motion, rootRef: shell.rootRef });
   const session = useReviewSession({ core, nav, modalOpen: !!lib.modal, host, rootRef: shell.rootRef, late });
   const resetLibraryState = useLibraryReset({ core, libApi: set, nav, session, defaultGen: () => freshGeneration(core.refs.dataRef.current?.settings) });
@@ -102,11 +107,16 @@ export default function App({ call: transportCall, host = NO_HOST }) {
     onLaunch: async (result) => { if (result.run) session.enterRun(result.run); else if (result.studyRef) await learn.openBoardReference(result.studyRef); },
     onChanged: () => boardState.refresh({ force: true }) });
 
+  /* 复习全书: the book of the current course when it has been written, else the 总纲 page, which offers to organise the course and write it. */
+  const openBook = () => nav.navigate('book', { animate: true, keepTrail: false, enter: 'user' });
+  const spaces = useSpaces({ data, nav, openBook });
+  useRememberView(nav.navPage);
+
   const study = useMemo(() => ({ call: core.call, act: core.act, busy: core.busy, notify: core.notify, askInChat: core.askInChat, host,
     openSettings: settingsEntry.openSettings, navigate: nav.navigate, openModal: set.setModal }),
   [core.call, core.act, core.busy, core.notify, core.askInChat, host, settingsEntry.openSettings, nav.navigate, set.setModal]);
   const app = { language, host, data, canChat: host.capabilities?.chat ?? !!host.askInChat, connection, core, shell, nav, lib, set, session, learn, intents, drafts,
-    notebooks, inbox, sources, tour, settingsEntry, dailyPlan, board, selectionNotices, resetLibraryState };
+    notebooks, inbox, sources, tour, settingsEntry, dailyPlan, board, selectionNotices, resetLibraryState, spaces };
 
   if (connection.loading) return <div className="study-app"><LoadingState className="app-loading" label={connection.connecting || ui('正在打开学习工作区…')} /></div>;
   const { run } = session, page = nav.page;
@@ -116,15 +126,18 @@ export default function App({ call: transportCall, host = NO_HOST }) {
       <QuickActionsContext.Provider value={core.quickApi}>
         <CourseActiveProvider value={courseActive}>
           <ToastContext.Provider value={core.toast}>
+            <CourseChangeContext.Provider value={courseChangeGuard}>
             <StudyServicesContext.Provider value={study}>
             <ModelSettingsContext.Provider value={settingsEntry.openModelSettings}>
               <AppContext.Provider value={app}>
+                <LearningProvider key={data?.root || 'unbound'}>
                 <div className="study-app" {...shell.appearanceAttrs} style={{ ...scienceVars(shell.sciencePrefs), ...appearanceStyle(shell.appearance) }}
                   lang={LANG_ATTR[language]} ref={shell.attachRoot} data-usage-area={page} tabIndex={-1}
                   onPointerDown={(event) => { if (!event.target.closest('button,input,textarea,select,a')) shell.rootRef.current?.focus(); }}>
                   <AppSidebar />
                   <main className={nav.pageTarget ? 'is-leaving' : undefined}>
                     <AppTopbar title={shellTitleOf(page, { run, decks: data?.decks })} />
+                    {data && <SpaceHeader page={nav.navPage} />}
                     <IngestBanner />
                     <StorageIssuesBanner />
                     <ContextReturn />
@@ -152,9 +165,11 @@ export default function App({ call: transportCall, host = NO_HOST }) {
                   )}
                   <AppModalHost />
                 </div>
+                </LearningProvider>
               </AppContext.Provider>
             </ModelSettingsContext.Provider>
             </StudyServicesContext.Provider>
+            </CourseChangeContext.Provider>
           </ToastContext.Provider>
         </CourseActiveProvider>
       </QuickActionsContext.Provider>

@@ -12,10 +12,13 @@
             'tour' when the feature tour switched to it; a plain navigate() calls nothing. ctx carries the resets.
    Free of ui() and React on purpose: the registry is plain data that a DOM-free test can read. */
 
+import { viewLabelOf } from './spaces.js';
+
 const user = (reset) => (ctx, how) => { if (how === 'user') reset(ctx); };
 
 export const PAGES = Object.freeze({
   library: { label: '学习库', title: '学习库', glyph: 'library', group: 'daily', needs: ['bank', 'study'] },
+  records: { label: '学习记录', title: '学习记录', glyph: 'notes', group: null, needs: ['learning-records'] },
   sources: { label: '资料', title: '资料', glyph: 'sources', group: 'daily', needs: ['materials'] },
   knowledge: { label: '知识图谱', title: '知识图谱', glyph: 'skeleton', group: 'daily', needs: ['knowledge'], flag: 'knowledgeGraph' },
   generate: { label: '创建题组', title: '创建题组', glyph: 'generate', group: 'daily', needs: ['materials', 'bank', 'authoring', 'generation'] },
@@ -31,6 +34,7 @@ export const PAGES = Object.freeze({
   skeleton: { label: '知识骨架', title: '知识骨架', glyph: 'skeleton', group: 'setup', needs: ['skeleton'] },
   audio: { label: '音频转写', title: '音频转写', glyph: 'audio', group: 'setup', needs: ['audio'] },
   live: { label: '课堂实录', title: '课堂实录', glyph: 'live', group: 'setup', needs: ['audio', 'recording'] },
+  bank: { label: '题库', title: '题库', glyph: 'bank', group: null, needs: ['bank', 'study'] },
   review: { label: '复习', title: null, glyph: null, group: null, needs: ['bank', 'study'] },
   draft: { label: '草稿与发布', title: '草稿与发布', glyph: null, group: null, needs: ['bank', 'authoring'] },
   manage: { label: '维护题组', title: '维护题组', glyph: null, group: null, needs: ['bank'] },
@@ -53,8 +57,8 @@ export const pageFlag = (id) => pageOf(id)?.flag;
 /** The pages of one sidebar group, in registry order (NAV_DEFAULTS is the saved, reorderable version of this). */
 export const pagesInGroup = (group) => PAGE_IDS.filter((id) => PAGES[id].group === group);
 
-/** The sidebar label of a page that has a sidebar entry ("返回学习库"); undefined for the rest, which say "原位置". */
-export const navLabelOf = (id) => (pageOf(id)?.group ? pageOf(id).label : undefined);
+/** The label of a page that is a view of one of the five spaces (ui/spaces.js: "返回题库"); undefined for the rest, which say "原位置". */
+export const navLabelOf = (id) => viewLabelOf(id);
 
 /** The words of the way back to a page that has no sidebar entry but names its own (source text); undefined for the rest. */
 export const backLabelOf = (id) => pageOf(id)?.back || undefined;

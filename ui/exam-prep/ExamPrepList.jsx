@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ui, uiFormat } from '../i18n.js';
 import { formatDateTime, joinMeta } from '../format.js';
 import { Badge, Button, EmptyState, PageHeader, ProgressBar } from '../components/index.js';
-import PageScope from '../PageScope.jsx';
 import Explain from './Explain.jsx';
 import { basisLine, countsLine, staleNote } from './words.js';
 
@@ -56,11 +55,10 @@ function BuildingRow({ build, onOpenTask }) {
   );
 }
 
-function Empty({ onCreate, otherCount, scoped }) {
+function Empty({ otherCount, scoped }) {
   return (
     <EmptyState icon="file" title={scoped ? ui('这门课还没有考点清单') : ui('还没有考点清单')}
-      description={ui('备考补习把课件和样卷整理成一份考点清单：哪些样卷考过，哪些是补充，每个考点出自课件的哪一页。')}
-      primary={{ label: ui('新建考点清单'), icon: 'plus', onClick: onCreate }}>
+      description={ui('备考补习把课件和样卷整理成一份考点清单：哪些样卷考过，哪些是补充，每个考点出自课件的哪一页。')}>
       <ul className="exam-prep-inputs">
         <li><strong>{ui('课件')}</strong>{ui('：必选。考点从这里列出来。')}</li>
         <li><strong>{ui('样卷')}</strong>{ui('：可选。由它定出哪些考点样卷考过；不选时所有考点都是补充。')}</li>
@@ -71,7 +69,7 @@ function Empty({ onCreate, otherCount, scoped }) {
   );
 }
 
-export default function ExamPrepList({ data, scope, onScope, rows, history = [], builds, listIds, otherCount, onOpen, onCreate, onOpenTask, onRestore }) {
+export default function ExamPrepList({ scope, rows, history = [], builds, listIds, otherCount, onOpen, onCreate, onOpenTask, onRestore }) {
   const [older, setOlder] = useState(false);
   // The lists a rebuild can belong to are all the lists (`listIds`), not only those of this scope.
   const known = listIds ?? new Set([...rows, ...history].map(row => row.id));
@@ -81,8 +79,7 @@ export default function ExamPrepList({ data, scope, onScope, rows, history = [],
   return (
     <section className="page exam-prep" data-usage-area="examprep">
       <PageHeader title={ui('备考补习')} description={ui('把课件和样卷整理成考点清单：哪些样卷考过，哪些是补充，每个考点出自哪一页。')}
-        actions={<Button variant="primary" icon="plus" data-usage="examprep.create" onClick={onCreate}>{ui('新建考点清单')}</Button>}
-        scope={<PageScope courses={data.focus?.courses} value={scope} onChange={onScope} />} />
+        actions={<Button variant="primary" icon="plus" data-usage="examprep.create" onClick={onCreate}>{ui('新建考点清单')}</Button>} />
       {failed.map(build => (
         <p key={build.jobId} className="exam-prep-failed" role="status">
           {uiFormat('「{0}」没有生成完。', [build.title])}{' '}
@@ -94,7 +91,7 @@ export default function ExamPrepList({ data, scope, onScope, rows, history = [],
           {fresh.map(build => <BuildingRow key={build.jobId} build={build} onOpenTask={onOpenTask} />)}
           {rows.map(row => <ListRow key={row.id} row={row} onOpen={onOpen} onOpenTask={onOpenTask} />)}
         </ul>
-      ) : <Empty onCreate={onCreate} otherCount={otherCount} scoped={scope !== '*'} />}
+      ) : <Empty otherCount={otherCount} scoped={scope !== '*'} />}
       {history.length > 0 && (
         <div className="exam-prep-history">
           <Button variant="link" size="sm" aria-expanded={older} onClick={() => setOlder(value => !value)}>

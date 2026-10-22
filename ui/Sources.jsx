@@ -4,7 +4,7 @@ import React, { memo, useEffect, useId, useMemo, useRef, useState } from "react"
 import { AudioJobs } from "./audio/AudioJobs.jsx";
 import { PdfConvertHistory, PdfConvertJobs } from './PdfConvertJob.jsx';
 import CourseField, { parseCourses } from './CourseField.jsx';
-import PageScope, { courseNamesOf, usePageScope } from './PageScope.jsx';
+import { courseNamesOf, useCourseScope } from './PageScope.jsx';
 import { useInjectCss } from "./shared.js";
 import { Badge, Button, Checkbox, Dialog, Disclosure, Icon, InlineMessage, PageHeader, Tooltip, useToast } from "./components/index.js";
 import { groupSourcesByDocument } from '../lib/source-groups.js';
@@ -312,7 +312,11 @@ export default function Sources({ data, setModal, sourceForm, openAgent, onGener
   const { busy, act, call } = useStudy();
   useInjectCss(css, "study-sources");
   const toast = useToast();
-  const [scope, setScope] = usePageScope(data.root, 'sources', data.focus?.course ?? '*');
+  // The page shows the current course (the top bar); a fresh import outside it widens this view to all courses until the course changes.
+  const [course] = useCourseScope();
+  const [widenedFor, setWidenedFor] = useState(null);
+  const scope = widenedFor === course ? '*' : course;
+  const setScope = (next) => setWidenedFor(next === '*' ? course : null);
   const [showArchived, setShowArchived] = useState(false);
   const allItems = useMemo(() => groupSourcesByDocument(data.sources), [data.sources]);
   const items = useMemo(() => allItems.filter(item => item.archived === showArchived), [allItems, showArchived]);
@@ -455,7 +459,6 @@ export default function Sources({ data, setModal, sourceForm, openAgent, onGener
         </>} />
       {gap && <IndexGapLine count={gap.count} canIndex={indexCoverage?.canIndex} onGo={() => onBuildIndex(gap.course)} />}
       {items.length > 0 && <>
-        <PageScope value={scope} onChange={setScope} courses={data.focus?.courses} />
         <details className="source-organize" onToggle={event => setOrganizing(event.currentTarget.open)}>
           <summary>{ui('整理课程归属')}</summary>
           <p className="muted">{ui('勾选资料后统一整理。只更改归属，原文与引用保持不变。')}</p>

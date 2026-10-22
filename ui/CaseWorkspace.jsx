@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ui, uiFormat, getUiLanguage } from "./i18n.js";
 import { useInjectCss } from "./shared.js";
 import Markdown from "./Markdown.jsx";
-import { countsDeck, courseMatcher, usePageScope } from "./PageScope.jsx";
+import { countsDeck, courseMatcher, useCourseScope } from "./PageScope.jsx";
 import { createWriteQueue } from "./async.js";
 import { submitAssist } from "./assist-request.js";
 import { modelReadiness } from "./generation-status.js";
@@ -205,7 +205,7 @@ export function CasePaper({ data, call, onExit, onCreate, onStartRun, initialRun
   useInjectCss(css, "study-case-workspace");
   const toast = useToast();
   // 模拟考试 owns the course scope and the header; used on its own the paper keeps its own scope.
-  const [ownCourse] = usePageScope(data?.root, "exam", data?.focus?.course ?? "*");
+  const [ownCourse] = useCourseScope();
   const course = courseProp ?? ownCourse;
   const decks = useMemo(() => {
     const within = courseMatcher(data, course), counts = countsDeck(data, course, false);

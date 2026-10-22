@@ -5,7 +5,6 @@ import { createRequire } from "node:module";
 import { build } from "esbuild";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { readAppSource } from "./helpers/app-source.mjs";
 
 /* The sidebar's rows share one anatomy: icon, label, optional trailing hint. The resume row ("回到题目")
    used to grow a second line while a run was open, which pushed every row below it down by 24px; these tests pin the
@@ -130,13 +129,11 @@ test("stylesheet contract: one row height, labels clamped to the row, no second-
   assert.match(all, /\.sidebar-bottom\s+\.nav\[aria-current="page"\]/, "Settings gets the same highlight and bar as the rows above it");
 });
 
-test("App uses the shared row for every sidebar entry", async () => {
-  const source = (await readAppSource()).replace(/\r/g, "");
-  assert.match(source, /<ResumeNavItem\b/);
-  assert.match(source, /<CoachNavItem\b/);
-  assert.doesNotMatch(source, /className=\{?["']nav[ "']/, "no hand-written nav button is left");
-  assert.doesNotMatch(source, /"nav active"/);
-  assert.doesNotMatch(source, /className="nav theme-cycle"/);
-  for (const id of ["nav-settings", "tour-reopen"]) assert.match(source, new RegExp(`data-tour="${id}"`));
-  assert.match(source, /data-tour=\{`nav-\$\{id\}`\}/);
+test("the five spaces and Settings use the shared accessible row", async () => {
+  const source = await readFile(new URL('../ui/app/AppSidebar.jsx', import.meta.url), 'utf8');
+  assert.match(source, /SPACES.map/);
+  assert.match(source, /<NavItem key={space.id}/);
+  assert.match(source, /data-space={space.id}/);
+  assert.match(source, /data-tour="nav-settings"/);
+  assert.doesNotMatch(source, /<ResumeNavItem|<CoachNavItem|tour-reopen/);
 });

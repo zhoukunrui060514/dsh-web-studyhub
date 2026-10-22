@@ -108,5 +108,9 @@
   "侧重点": "Focus",
   "已带回可用资料和上次的设置；{0}当时没有记录，请重新选。": "The sources that still exist and your earlier settings are back on the form; {0} were not recorded, so choose them again.",
   "已带回可用资料、题型、题数、覆盖强度、侧重点和难度；请核对后再生成。": "The sources that still exist, question type, count, coverage strength, focus and difficulty are back on the form; check them, then generate.",
-  "另有资料已不在资料库里，没有带回。": "Some sources are no longer in the library and were not brought back."
+  "另有资料已不在资料库里，没有带回。": "Some sources are no longer in the library and were not brought back.",
+  "五个空间，各有分工": "Five spaces, each with a purpose",
+  "左侧是今天、资料、知识、练习、记录五个空间。进入空间后，在页面上方切换视图；再次进入会回到刚才的视图。课程在顶栏统一切换，任务和信箱也在顶栏。语言、外观和导览放在左下角的设置里。": "The sidebar has five spaces: Today, Materials, Knowledge, Practice and Records. Use the links below the top bar to switch views; returning to a space reopens its last view. Switch the course in the top bar, alongside tasks and the inbox. Language, appearance and tours are in Settings at the lower left.",
+  "今天根据到期复习、错题和新题安排下一步。全部题组和草稿在「练习 › 题库」里，随时可以打开。": "Today suggests your next step from due reviews, mistakes and new questions. Find all decks and drafts in Practice › Question bank.",
+  "在顶栏切换当前课程。首页标题旁的「课程设置…」可以记录考试日期、形式和作答时间，也可以补充老师的考试说明，供出题和模拟考试参考。": "Switch the current course in the top bar. Course settings beside the home heading stores the exam date, format, timing and teacher guidance for question generation and mock exams."
 }

@@ -1,0 +1,45 @@
+@layer study.reset, study.tokens, study.components, study.features, study.overrides;
+
+@layer study.components {
+  .study-app .space-header {
+    display: flex;
+    gap: var(--space-1);
+    padding: 0 var(--space-7);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-canvas);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .study-app .space-header__view {
+    position: relative;
+    padding: var(--space-3) var(--space-3);
+    border: 0;
+    background: none;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .study-app .space-header__view:hover { color: var(--text); }
+  .study-app .space-header__view[aria-current='page'] { color: var(--text); }
+  .study-app .space-header__view::after {
+    content: '';
+    position: absolute;
+    left: var(--space-3);
+    right: var(--space-3);
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .study-app .space-header__view[aria-current='page']::after { transform: scaleX(1); }
+  .study-app .space-header__view:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius-sm); }
+  @media (max-width: 720px) {
+    .study-app .space-header { padding: 0 var(--space-4); }
+  }
+}

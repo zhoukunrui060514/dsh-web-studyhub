@@ -1,7 +1,6 @@
 import React from 'react';
 import { ui, uiFormat } from '../i18n.js';
-import { Button, PageHeader, Tooltip } from '../components/index.js';
-import { CourseSwitch } from '../study-map/CourseHeading.jsx';
+import { Button, PageHeader } from '../components/index.js';
 import BookMoves from './BookMoves.jsx';
 
 /* The review book's header (docs/review-book.md "Open it"): it scrolls away with the page. A quiet ink 「回到总纲」, the title 「复习全书」 with the course switcher
@@ -9,12 +8,9 @@ import BookMoves from './BookMoves.jsx';
    one-off 「已切换到课程 X」 of the home's card and the one-off 「笔记换了位置」 notice. */
 
 /** data: the snapshot; course, courseName; book: course.book.open's answer or null; writing: the running book task or null; switched; onBack, onCourse(course), onOpenTask(jobId). */
-export default function BookHeader({ data, course, courseName, book, writing, switched, onBack, onCourse, onOpenTask }) {
-  const courses = data?.focus?.courses || [];
-  const name = courses.length > 1 ? <Tooltip layer content={ui('会切换整个应用的当前课程')} anchorClassName="book-header__course">
-    <CourseSwitch data={data} onFocus={next => onCourse(next.course)}>{courseName}</CourseSwitch></Tooltip> : courseName;
+export default function BookHeader({ course, courseName, book, writing, switched, onBack, onOpenTask }) {
   return (
-    <PageHeader compact className="book-header" back={{ label: ui('回到总纲'), onClick: onBack }} title={<>{ui('复习全书')}<span className="book-header__dot" aria-hidden="true"> · </span>{name}</>}
+    <PageHeader compact className="book-header" back={{ label: ui('回到总纲'), onClick: onBack }} title={<>{ui('复习全书')}<span className="book-header__dot" aria-hidden="true"> · </span>{courseName}</>}
       titleProps={{ tabIndex: -1, 'data-context-heading': true }}>
       {writing && book?.status === 'ok' && book.notes && <p className="book-header__status" role="status">{ui('正在更新复习全书…')}
         {onOpenTask && <Button variant="link" size="sm" onClick={() => onOpenTask(writing.jobId)}>{ui('看进度')}</Button>}</p>}

@@ -78,7 +78,7 @@ export default function Composer({ columnTitle, studyRef, library, labelSuggesti
         <datalist id={listId}>{labelSuggestions.filter((label) => !typed.includes(label)).map((label) => <option key={label} value={`${prefix}${label}`} />)}</datalist>
       </div>
       <div className="board-composer__actions">
-        <Button type="submit" variant="primary" size="sm" disabled={!ready} busy={sending}>{ui('添加')}</Button>
+        <Button type="submit" variant="secondary" size="sm" disabled={!ready} busy={sending}>{ui('添加')}</Button>
         <CloseButton onClick={onClose} />
       </div>
     </form>

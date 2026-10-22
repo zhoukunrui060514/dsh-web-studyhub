@@ -62,7 +62,7 @@ export default function Manage({
   const splitReady = !!splitTitle.trim() && splitTopics.length > 0 && splitTopics.length < topics.length;
   return (
     <section className="page manage-page">
-      <PageHeader className="manage-head" back={{ label: ui("返回学习库"), onClick: () => setPage("library") }} title={managedDeck.title}
+      <PageHeader className="manage-head" back={{ label: ui("返回题库"), onClick: () => setPage("bank") }} title={managedDeck.title}
         description={slainView ? ui("本工作区唯一的斩题组。这里的题不参与复习，作答历史和复习进度保留，可恢复到原题组。")
           : ui("编辑先进入草稿；重新发布时，未改动题目保留复习进度，内容变更的题目重新开始调度。历史作答始终保留。")}
         actions={<>
@@ -162,7 +162,7 @@ export default function Manage({
       {merging && targetId && <MergeDeckDialog deck={managedDeck} target={peers.find((d) => d.id === targetId) || { title: "" }}
         onClose={() => setMerging(false)} onConfirm={async () => {
           const result = await act("deck.merge", { sourceIds: [managedDeck.id], targetId }, (moved) => {
-            setPage("library"); toast.success(uiFormat("已合并 {0} 道题，全部保留", [moved.moved]));
+            setPage("bank"); toast.success(uiFormat("已合并 {0} 道题，全部保留", [moved.moved]));
           }, { rethrow: true });
           if (result === undefined) throw new Error(ui("另一个操作还在进行，请稍后重试。"));
         }} />}

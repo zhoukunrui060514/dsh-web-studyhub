@@ -42,3 +42,82 @@
     .sh-btn.nav-reset:hover:not(:disabled) { color: var(--text-dim); background: none; }
   }
 }
+
+/* The redesign's shell (Clarity): a narrow sidebar of five spaces, a 48px top bar that says where the page sits and which course every page
+   follows. It outranks the older rules of shell.css from the overrides layer; tokens only. */
+@layer study.overrides {
+  :where(.study-app, .study-seat) {
+    .sidebar {
+      width: 208px;
+      padding: var(--space-4) var(--space-3) var(--space-3);
+      background: var(--bg-sunken);
+      border-right: 1px solid var(--line);
+      --nav-row: 38px;
+      --nav-highlight: var(--bg-selected);
+    }
+    .sidebar .brand {
+      margin: 0 var(--space-2) var(--space-6);
+      gap: var(--space-2-5);
+      font-size: var(--fs-md);
+      font-weight: var(--fw-strong);
+    }
+    .sidebar .brand-mark { width: 26px; height: 26px; color: var(--accent-text); }
+    .side-spaces { display: flex; flex-direction: column; gap: var(--space-1); }
+    .side-spaces > .nav {
+      border-radius: var(--radius-sm);
+      margin: 0;
+      font-size: var(--fs-md);
+      font-weight: var(--fw-medium);
+      color: var(--text-muted);
+    }
+    .side-spaces > .nav:hover:not(:disabled) { color: var(--text); background: var(--bg-hover); }
+    .side-spaces > .nav[aria-current="page"] { color: var(--accent-text); background: transparent; }
+    .side-spaces > .nav:hover:not(:disabled):not([aria-current="page"]) .icon { transform: none; }
+    .side-spaces .nav-mark { border-radius: var(--radius-sm); background: var(--nav-highlight); }
+    .side-spaces .nav-mark::before { display: none; }
+    .sidebar-bottom { border-top: 1px solid var(--line); padding-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
+    .sidebar-bottom .nav { border-radius: var(--radius-sm); color: var(--text-muted); }
+    .sidebar-bottom .nav[aria-current="page"] { color: var(--accent-text); background: var(--bg-selected); }
+    .sidebar-bottom .nav[aria-current="page"]::before { display: none; }
+    .sidebar.is-narrow { width: 60px; }
+    .topbar {
+      height: 48px;
+      gap: var(--space-4);
+      padding: 0 var(--space-7);
+      border-bottom: 1px solid var(--line);
+      font-size: var(--fs-sm);
+    }
+    .crumbs { gap: var(--space-2); flex: 0 1 auto; }
+    .crumbs .crumb { color: var(--text-muted); }
+    .crumbs .crumb[aria-current="page"] { color: var(--text); font-weight: var(--fw-medium); }
+    .top-course { flex: 0 1 260px; min-width: 0; margin-right: auto; }
+    .top-course .page-scope { display: flex; flex-direction: row; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--fs-sm); }
+    .top-course .page-scope > :is(.page-scope__path, .page-scope__note) { display: none; }
+    .top-tasks { position: relative; }
+    .top-tasks[aria-current="page"] { color: var(--accent-text); background: var(--bg-selected); }
+    .top-tasks__count {
+      min-width: 16px;
+      height: 16px;
+      padding: 0 var(--space-1);
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-size: var(--fs-xs);
+      line-height: 16px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .top-tasks.is-failed .top-tasks__count { background: var(--bad); }
+    .page { max-width: 1120px; padding: var(--space-7) var(--space-7) var(--space-9); }
+    @media (max-width: 720px) {
+      .topbar { padding: 0 var(--space-4); }
+      .top-status-label, .library-location { display: none; }
+      .page { padding: var(--space-5) var(--space-4) var(--space-8); }
+    }
+    @media (max-width: 480px) {
+      .topbar { gap: var(--space-2); }
+      .topbar .crumbs { display: none; }
+      .top-course { flex: 1 1 auto; }
+    }
+  }
+}

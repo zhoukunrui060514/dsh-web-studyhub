@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { uiFormat } from '../i18n.js';
 import { useToast } from '../components/index.js';
 import { useStudy } from '../study-context.jsx';
-import { courseNamesOf, usePageScope } from '../PageScope.jsx';
+import { courseNamesOf, useCourseScope } from '../PageScope.jsx';
 import { useInjectCss } from '../shared.js';
 import ExamPrepCreate from './ExamPrepCreate.jsx';
 import ExamPrepDetail from './ExamPrepDetail.jsx';
@@ -19,7 +19,7 @@ import css from './exam-prep.css';
 export default function ExamPrep({ data, onOpenSource, onOpenTask, openSettings, openImport }) {
   useInjectCss(css, 'study-exam-prep');
   const toast = useToast(), { act } = useStudy();
-  const [scope, setScope] = usePageScope(data.root, 'examprep', data.focus?.course ?? '*');
+  const [scope] = useCourseScope();
   // A form kept while the learner stepped out to Settings comes back as it was (./form-draft.js).
   const [view, setView] = useState(() => { const kept = keptForm(data.root); return kept ? { name: 'create', initial: kept.form, more: kept.more } : { name: 'list' }; });
   useEffect(() => { dropForm(); }, []);
@@ -40,7 +40,7 @@ export default function ExamPrep({ data, onOpenSource, onOpenTask, openSettings,
     return <ExamPrepDetail row={open} onBack={list} onOpenSource={onOpenSource} onOpenTask={onOpenTask} onDeleted={row => { toast.success(uiFormat('已删除「{0}」', [row.title])); list(); }}
       onRegenerate={(row, blueprint) => setView({ name: 'create', initial: rebuildForm(formFromList(row, blueprint), data) })} />;
   }
-  return <ExamPrepList data={data} scope={scope} onScope={setScope} rows={rows} history={history} builds={builds} listIds={listIds} otherCount={Math.max(0, everything.length - rows.length)}
+  return <ExamPrepList scope={scope} rows={rows} history={history} builds={builds} listIds={listIds} otherCount={Math.max(0, everything.length - rows.length)}
     onOpen={id => setView({ name: 'detail', id })} onCreate={() => setView({ name: 'create', initial: openingForm(data, { scope, known }) })} onOpenTask={onOpenTask}
     onRestore={row => act('source.archive', { sourceIds: [row.id], archived: false }, () => toast.success(uiFormat('已恢复「{0}」', [row.title])))} />;
 }
