@@ -99,6 +99,71 @@ test('separate session practices do not close one another; focus and course rena
   assert.equal(first.basisStatus, 'current');
 });
 
+test('a closed unfinished session practice starts a new answerable round and preserves the old answers', async t => {
+  const { service, args } = await fixture(t);
+  await service.store.update(state => state.decks[0].cards.push({ ...state.decks[0].cards[0], id: 'q2' }));
+  let session = await atPractice(service, args);
+  const first = await update(service, 'practice.start', session, { requestId: 'first-practice' });
+  await service.call('review.answer', { runId: first.run.id, cardId: first.run.card.id, selected: ['A'] });
+  await service.call('review.end', { runId: first.run.id });
+  const before = await service.store.read();
+  const oldRun = before.runs.find(run => run.id === first.run.id);
+  session = first.session;
+  const restartArgs = { id: session.id, version: session.version, requestId: 'restart-practice' };
+  const [second, replay] = await Promise.all([
+    service.call('learning.session.practice.start', restartArgs),
+    service.call('learning.session.practice.start', restartArgs),
+  ]);
+  assert.notEqual(second.run.id, first.run.id);
+  assert.equal(replay.run.id, second.run.id);
+  assert.equal(second.run.closed, false);
+  const after = await service.store.read();
+  assert.deepEqual(after.runs.find(run => run.id === first.run.id), oldRun);
+  assert.deepEqual(after.attempts, before.attempts);
+  assert.equal(after.runs.length, 2);
+  for (const cardId of ['q', 'q2']) {
+    const raw = (await service.store.read()).runs.find(run => run.id === second.run.id);
+    await service.call('review.move', { runId: raw.id, index: raw.entries.findIndex(entry => entry.card.id === cardId) });
+    await service.call('review.answer', { runId: raw.id, cardId, selected: ['A'] });
+  }
+  session = await update(service, 'advance', second.session, { requestId: 'finish-restarted-practice' });
+  assert.equal(session.step, 'summary');
+});
+
+test('archiving then restoring a deck can restart unfinished practice; a completed closed practice is reused', async t => {
+  const { service, args } = await fixture(t);
+  const session = await atPractice(service, args);
+  const first = await update(service, 'practice.start', session, { requestId: 'first-practice' });
+  await service.call('deck.archive', { id: 'deck', archived: true });
+  await service.call('deck.archive', { id: 'deck', archived: false });
+  const second = await update(service, 'practice.start', first.session, { requestId: 'after-restore' });
+  assert.notEqual(second.run.id, first.run.id);
+  await service.call('review.answer', { runId: second.run.id, cardId: 'q', selected: ['A'] });
+  await service.call('review.end', { runId: second.run.id });
+  const reopened = await update(service, 'practice.start', second.session, { requestId: 'completed-practice' });
+  assert.equal(reopened.run.id, second.run.id);
+  assert.equal((await service.store.read()).runs.length, 2);
+  assert.equal((await update(service, 'advance', reopened.session, { requestId: 'finish' })).step, 'summary');
+});
+
+test('citation-only topics retain their material basis and reject changed or removed sources before practice', async t => {
+  const { service, args } = await fixture(t);
+  await service.store.update(state => {
+    delete state.decks[0].sourceIds;
+    delete state.decks[0].cards[0].sourceIds;
+    state.decks[0].cards[0].citations = [{ sourceId: 's', quote: '这是原文知识' }];
+  });
+  const session = await atPractice(service, args);
+  assert.deepEqual(session.materials.map(ref => ref.sourceId), ['s']);
+  assert.equal((await service.call('learning.session.get', { id: session.id })).basisStatus, 'current');
+  await service.store.update(state => { state.sources[0].text = '已变更的原文'; });
+  assert.equal((await service.call('learning.session.get', { id: session.id })).basisStatus, 'stale');
+  await assert.rejects(update(service, 'practice.start', session, { requestId: 'stale-citation' }), { code: 'learning-target-stale' });
+  await service.store.update(state => { state.sources[0].archived = true; });
+  assert.equal((await service.call('learning.session.get', { id: session.id })).basisStatus, 'unavailable');
+  await assert.rejects(update(service, 'practice.start', session, { requestId: 'removed-citation' }), { code: 'learning-target-stale' });
+});
+
 test('empty practice stays empty and explicit skips never claim completed practice or add attempts', async t => {
   const { service, args } = await fixture(t);
   await service.store.update(state => { state.decks[0].cards[0].suspended = true; });

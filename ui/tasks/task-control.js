@@ -1,7 +1,7 @@
 import { ui, uiFormat } from '../i18n.js';
 import { STRENGTH_LABEL } from '../../lib/model-effort.js';
 import { FOLLOW_MODEL, modelKey, modelOfKey } from '../../lib/job-model.js';
-import { contractOf, taskKindOf } from './task-model.js';
+import { contractOf, taskKindOf, taskActionAllowed } from './task-model.js';
 import { followOption } from '../follow-session.js';
 import { effortNoteText, effortSelectModel } from '../EffortSelect.jsx';
 
@@ -112,9 +112,9 @@ export function reasonText(action, name) {
 
 /** The action buttons of the header, from the contract: only what is available is a button. */
 export function headerActions(job) {
-  const { actions } = contractOf(job);
-  const retired = taskKindOf(job) === 'audio';
-  return { pause: !retired && actions.pause.available, resume: !retired && actions.resume.available, cancel: actions.cancel.available, retry: !retired && actions.retry.available };
+  const { actions, kind } = contractOf(job);
+  const available = name => actions[name].available && taskActionAllowed(kind, name);
+  return { pause: available('pause'), resume: available('resume'), cancel: available('cancel'), retry: available('retry') };
 }
 
 /** The wording of "✓ 已生效 · 校对/翻译并发 → 4" for what a reply says is now in force. `items` (the row's controlItems) names a choice as its select does. */

@@ -21,6 +21,9 @@ const KINDS = { ...Object.fromEntries(AUDIO_JOB_TYPES.map((type) => [type, 'audi
 /** The kind of a job, for its label and for the job-type section of the detail pane. */
 export const taskKindOf = (job) => KINDS[contractOf(job).kind] || 'extension';
 
+/** Retired recording tasks keep their history and stop action, but cannot start work again. */
+export const taskActionAllowed = (kind, action) => !AUDIO_JOB_TYPES.includes(kind) || action === 'cancel';
+
 /** The identity a selection and a deep link use: what survives a retry. */
 export const taskId = (job) => contractOf(job).jobId;
 

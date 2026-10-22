@@ -12,7 +12,7 @@ function ReinforcementList({ scope }) {
   const { data, core, intents } = useApp(), learning = useLearning();
   const [cursor, setCursor] = useState(null);
   const { run, working, error } = useAsyncAction({ exclusive: true });
-  const query = useQuery(core.call, 'learning.reinforcement.query', { scope, limit: 50, ...(cursor ? { cursor } : {}) }, data.root);
+  const query = useQuery(core.call, 'learning.reinforcement.query', { scope, limit: 50, ...(cursor ? { cursor } : {}) }, data.root, true, data.revision);
   return <><QueryStatus query={query} onRefresh={() => { setCursor(null); query.refresh(); }} />{error && <p role="alert">{error}</p>}
     {query.value?.total === 0 && <p className="loop-brief">{ui('当前范围没有待巩固题目。')}</p>}
     {query.value?.items.map(item => <article className="loop-row" key={item.id}><p className="loop-meta">{item.course?.name || ui('未分类')} · {ui('最近评分')} {item.grade}</p>
