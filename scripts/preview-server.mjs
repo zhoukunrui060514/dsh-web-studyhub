@@ -14,6 +14,7 @@ import { createFakeModel, FAKE_MODEL_ROUTE } from "./fake-model.mjs";
 import { cleanEffortPreference, withEffortState } from "../lib/reasoning-effort.js";
 import { createFakeRetrievalTools } from "./fake-retrieval.mjs";
 import { createFakeExtension } from "./fake-extension.mjs";
+import { previewJobs } from './preview-jobs.mjs';
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 const SESSION_ID = "study-preview";
@@ -71,6 +72,7 @@ function previewModel(model, fakeLatencyMs) {
  */
 function previewHost(workspaceRoot, model, efforts = [], retrieval = null, coverage = null, runtimePilot = null) {
   const disposers = [];
+  const agent = { id: SESSION_ID }, jobs = previewJobs(SESSION_ID);
   const extension = retrieval === "extension" ? createFakeExtension({}) : null;
   const ctx = {
     ...(retrieval === "fake" ? { tools: createFakeRetrievalTools({ root: workspaceRoot }) } : extension ? { tools: extension.tools } : {}),
@@ -79,6 +81,8 @@ function previewHost(workspaceRoot, model, efforts = [], retrieval = null, cover
     sessions: new Map([[SESSION_ID, { header: { cwd: workspaceRoot } }]]),
     // The session follows the preview model, as a DSH session follows its selected model.
     get: (name) => name === "agentDefaultModel" && model ? { currentSelection: () => model.route }
+      : name === 'agents' ? new Map([[SESSION_ID, agent]])
+      : name === 'jobs' ? jobs
       : name === "studyCoverage" && coverage ? coverage
       : extension && name === "pluginManager" ? extension.pluginManager : extension && name === "profileContext" ? { name: "web" } : undefined,
     effect: (setup) => { const dispose = setup(); if (typeof dispose === "function") disposers.push(dispose); },

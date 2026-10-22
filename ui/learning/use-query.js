@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { errorMessage } from '../i18n.js';
 
 // Retain content during a same-scope refresh; a scope change fences both display and late replies.
-export function useQuery(call, operation, args, identity, enabled = true) {
+export function useQuery(call, operation, args, identity, enabled = true, refreshVersion = null) {
   const key = JSON.stringify([identity, operation, args]);
   const [state, setState] = useState({ key, value: null, loading: true, error: '' });
   const [revision, setRevision] = useState(0);
@@ -16,7 +16,7 @@ export function useQuery(call, operation, args, identity, enabled = true) {
       if (live) setState(previous => ({ ...previous, key, loading: false, error: errorMessage(error) }));
     });
     return () => { live = false; };
-  }, [call, key, revision, enabled, operation]);
+  }, [call, key, revision, enabled, operation, refreshVersion]);
   return { ...(state.key === key ? state : { value: null, loading: enabled, error: '' }),
     refresh: () => setRevision(value => value + 1) };
 }
