@@ -23,6 +23,46 @@ async function fixture(t) {
 
 const update = (service, action, session, extra = {}) => service.call(`learning.session.${action}`, { id: session.id, version: session.version, requestId: `${action}:${session.version}`, ...extra });
 
+test('different clicks and entry points reuse unfinished study and retain retry receipts', async t => {
+  const { service, args } = await fixture(t);
+  const sessions = await Promise.all(Array.from({ length: 4 }, (_, i) => service.call('learning.session.start', {
+    ...args, origin: i % 2 ? 'reinforcement' : 'knowledge', requestId: `click-${i}`,
+  })));
+  assert.equal(new Set(sessions.map(s => s.id)).size, 1);
+  let session = await update(service, 'record', sessions[0], { step: 'explain', content: '已经学到这里' });
+  session = await update(service, 'advance', session);
+  session = await update(service, 'pause', session);
+  const reused = await service.call('learning.session.start', { ...args, requestId: 'later-click' });
+  assert.equal(reused.id, session.id);
+  assert.equal(reused.step, 'retell');
+  assert.equal(reused.status, 'paused');
+  assert.equal(reused.records.explain.content, '已经学到这里');
+  await assert.rejects(service.call('learning.session.start', { ...args, requestId: 'later-click', origin: 'today' }), { code: 'learning-request-conflict' });
+  assert.equal((await service.store.read()).learningSessions.length, 1);
+});
+
+test('completed study and changed material allow a new round without changing history', async t => {
+  const { service, args } = await fixture(t);
+  let session = await service.call('learning.session.start', args);
+  for (let i = 0; i < 4; i++) session = await update(service, 'advance', session, { skip: true, reason: '本轮跳过' });
+  const next = await service.call('learning.session.start', { ...args, requestId: 'next' });
+  assert.notEqual(next.id, session.id);
+  await service.store.update(state => { state.sources[0].text += '修订'; });
+  const revised = await service.call('learning.session.start', { ...args, requestId: 'revised' });
+  assert.notEqual(revised.id, next.id);
+  assert.equal((await service.call('learning.session.get', { id: session.id })).status, 'completed');
+  assert.equal((await service.call('learning.session.start', { ...args, requestId: 'next' })).id, next.id);
+});
+
+test('a reused start cannot take a receipt ID already used to save notes', async t => {
+  const { service, args } = await fixture(t);
+  const session = await service.call('learning.session.start', args);
+  await update(service, 'record', session, { step: 'explain', content: '已有笔记', requestId: 'shared-id' });
+  const before = await service.store.read();
+  await assert.rejects(service.call('learning.session.start', { ...args, requestId: 'shared-id' }), { code: 'learning-request-conflict' });
+  assert.deepEqual(await service.store.read(), before);
+});
+
 test('fixed session start is idempotent and content, pause, version conflicts and readonly history survive reload', async t => {
   const { root, service, args } = await fixture(t);
   const [one, two] = await Promise.all([service.call('learning.session.start', args), service.call('learning.session.start', args)]);
@@ -84,8 +124,9 @@ async function atPractice(service, args) {
 
 test('separate session practices do not close one another; focus and course rename preserve the fixed target', async t => {
   const { service, args } = await fixture(t);
+  await service.store.update(state => state.decks[0].cards.push({ ...state.decks[0].cards[0], id: 'q-other', topic: '另一主题' }));
   let first = await atPractice(service, args);
-  const second = await atPractice(service, { ...args, requestId: 'start-2' });
+  const second = await atPractice(service, { ...args, target: { ...args.target, topic: '另一主题' }, requestId: 'start-2' });
   const one = await update(service, 'practice.start', first, { requestId: 'p' });
   const two = await update(service, 'practice.start', second, { requestId: 'p' });
   assert.notEqual(one.run.id, two.run.id);
