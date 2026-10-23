@@ -6,6 +6,16 @@ const card = id => ({ id, kind: 'quiz', topic: '主题', prompt: '题目', optio
 function fixture() { return { sources: [], documents: [], decks: [{ id: 'd', title: '题组', course: '课程', cards: [card('q')] }], drafts: [], courses: [{ id: 'c', name: '课程' }], attempts: [], runs: [], workflowSessions: [], learningSessions: [], settings: {}, focus: { mode: 'class', course: '*' } }; }
 const run = (id, extra = {}) => ({ id, mode: 'review', deckId: 'd', index: 0, startedAt: '2026-10-22T10:00:00Z', entries: [{ card: card('q') }], ...extra });
 
+test('today collapses same-goal duplicates by creation order and preserves history', () => {
+  const state = fixture();
+  const common = { course: { id: 'c', name: '课程' }, target: { kind: 'topic', deckId: 'd', topic: '主题' }, basisRevision: 'same', status: 'active', schemaVersion: 2, phase: 'reading' };
+  state.learningSessions.push({ ...common, id: 'older', updatedAt: '2099-01-01' }, { ...common, id: 'newer', updatedAt: '2026-01-01' });
+  const result = learningToday(state, { now });
+  assert.equal(result.primary.target.sessionId, 'newer');
+  assert.ok(!result.secondary.some(row => row.target.sessionId === 'older'));
+  assert.equal(state.learningSessions.length, 2);
+});
+
 test('one deterministic decision preserves continuation priority and carries explicit course without focus writes', () => {
   const state = fixture();
   state.runs.push(run('batch', { purpose: 'course', course: '课程' }), run('plain'));

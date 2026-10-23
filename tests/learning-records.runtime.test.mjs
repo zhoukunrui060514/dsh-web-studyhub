@@ -30,8 +30,9 @@ async function fixture(t) {
   return { service, scope };
 }
 async function practice(service, scope, key) {
+  const unfinished = (await service.store.read()).learningSessions.find(s => s.status === 'active');
+  if (unfinished) await service.call('learning.session.finish', { id: unfinished.id, version: unfinished.version, requestId: `finish-${key}` });
   let session = await service.call('learning.session.start', { scope, target: { kind: 'topic', deckId: 'd', topic: '主题' }, origin: 'reinforcement', requestId: key });
-  for (const requestId of ['e', 'r']) session = await service.call('learning.session.advance', { id: session.id, version: session.version, requestId, skip: true, reason: '直接练习' });
   return service.call('learning.session.practice.start', { id: session.id, version: session.version, requestId: 'p' });
 }
 
@@ -105,10 +106,8 @@ test('optional summary failures cannot roll back answers or completed sessions; 
   };
   await service.call('review.answer', { runId: first.run.id, cardId: 'q', selected: ['A'] });
   assert.equal((await service.store.read()).attempts.length, 1);
-  let session = await service.call('learning.session.advance', { id: first.session.id, version: first.session.version, requestId: 'answered' });
-  session = await service.call('learning.session.record', { id: session.id, version: session.version, requestId: 'summary', step: 'summary', content: '人工总结' });
   const before = calls;
-  session = await service.call('learning.session.advance', { id: session.id, version: session.version, requestId: 'complete' });
+  const session = await service.call('learning.session.finish', { id: first.session.id, version: first.session.version, requestId: 'complete' });
   assert.equal(session.status, 'completed');
   assert.equal(calls, before + 1);
   assert.equal((await service.store.read()).attempts.length, 1);

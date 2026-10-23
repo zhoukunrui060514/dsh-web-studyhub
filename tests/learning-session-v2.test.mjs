@@ -61,6 +61,9 @@ test('practice caps five, reuses completed batch, next excludes actual attempts;
   const after = await service.store.read();
   assert.ok(after.runs.find(r => r.id === next.run.id).closedAt);
   assert.deepEqual(after.decks, mastery);
+  const results = await service.call('learning.records.sessionResults', { id: session.id });
+  assert.equal(results.sessionSummary.answered, 5);
+  assert.equal(results.sessionSummary.unanswered, 2);
 });
 
 test('incomplete batch requires explicit close; close/next replay and competing writes stay atomic', async t => {
