@@ -8,10 +8,11 @@ import { useLearning } from './LearningProvider.jsx';
 import QueryStatus from './QueryStatus.jsx';
 import LegacyExport from './LegacyExport.jsx';
 import Markdown from '../Markdown.jsx';
+import SessionResults from './SessionResults.jsx';
 
 function RecordContent({ detail }) {
   const record = detail.record;
-  if (detail.type === 'session') return Object.entries(record.records).map(([step, value]) => <section key={step}><h3>{ui(STEP_LABELS[step])}</h3><Markdown text={value.content || value.reason || ui(step === 'practice' ? '作答详情保存在关联练习中。' : '尚未保存文字。')} /></section>);
+  if (detail.type === 'session') return <>{detail.results && <SessionResults results={detail.results} />}{Object.entries(record.records ?? {}).map(([step, value]) => value.content && <section key={step}><h3>{ui(STEP_LABELS[step])}</h3><Markdown text={value.content} /></section>)}</>;
   if (detail.type === 'note') return <Markdown text={record.markdown || ui('这篇笔记还没有正文。')} />;
   if (detail.type === 'run') return <ol>{record.entries.map((entry, index) => <li key={index}><Markdown text={entry.card.prompt} /><p className="loop-meta">{ui(entry.feedback ? '已作答' : '尚未作答')}</p></li>)}</ol>;
   return <><p>{ui('评分')}：{record.grade}</p><p className="loop-meta">{ui('打开关联练习，可以查看当时的题目、答案与反馈。')}</p></>;
@@ -40,7 +41,7 @@ function RecordList({ scope }) {
     {query.value?.items.map(item => <article className="loop-row" key={`${item.type}:${item.id}`}>
       <p className="loop-meta">{ui(TYPE_LABELS[item.type])} · {item.at ? new Date(item.at).toLocaleString() : ui('时间未知')} · {item.courses.map(course => course.name || ui('未分类')).join('、') || ui('历史归属未知')}</p>
       <h2>{item.title || ui(TYPE_LABELS[item.type])}</h2>
-      {item.step && <p>{ui(STEP_LABELS[item.step])} · {ui(item.status === 'completed' ? '已完成' : item.status === 'paused' ? '已暂停' : '进行中')}</p>}
+      {(item.phase || item.step) && <p>{ui(({ reading: '阅读中', practice: '练习中', results: '结果' })[item.phase] || STEP_LABELS[item.step])} · {ui(item.status === 'completed' ? '已结束' : item.status === 'paused' ? '已暂停' : '进行中')}</p>}
       {item.type === 'run' && <p>{ui('已作答')} {item.answered} / {item.total}</p>}
       {item.type === 'attempt' && <p>{ui('评分')}：{item.grade}{item.retry ? ` · ${ui('同轮回忆')}` : ''}</p>}
       <div className="loop-actions">

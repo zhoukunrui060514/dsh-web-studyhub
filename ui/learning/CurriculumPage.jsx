@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../app/app-context.js';
 import { Button } from '../components/index.js';
-import Markdown from '../Markdown.jsx';
+import { ReadingNode } from './LearningReader.jsx';
 import { ui } from '../i18n.js';
 import { useAsyncAction } from '../use-async.js';
 import { learningScope } from './model.js';
@@ -44,7 +44,7 @@ function CourseContent({ scope, onReader, onOutline }) {
     {shown.map(node => <article className="loop-row" key={node.id} style={{ marginInlineStart: `${depthOf(node) * 16}px` }}>
       <p className="loop-meta">{node.parentId ? ui('知识点') : ui('章节')}</p><h2>{node.title}</h2>
       {node.intro && <p>{node.intro}</p>}
-      {view === 'reading' && <div className="loop-reading"><Markdown text={[node.reading?.gen, node.reading?.mine, node.reading?.qa].filter(Boolean).join('\n\n') || ui('尚未编写讲解，点击上方生成阅读内容，或打开完整阅读编辑器补充。')} /></div>}
+      {view === 'reading' && <ReadingNode node={node.reading ?? { key: node.id }} />}
       {view === 'exam' && <>{!node.examPoints?.length && !node.exam?.evidence?.length && <p className="loop-meta">{ui('暂无已映射考点')}</p>}{node.examPoints?.map(point => <p key={point.id || point.pointId}>{point.title || point.text || point.pointId}</p>)}{node.exam?.evidence?.map((place, index) => <blockquote key={index}>{place.quote}</blockquote>)}</>}
       <Button disabled={!!working} onClick={() => run('start', () => learning.startSession({ scope, target: { kind: 'outline', nodeId: node.id, outlineRevision: result.outlineRevision }, origin: 'knowledge' }))}>{ui('学这个知识点')}</Button>
       <Button variant="quiet" onClick={() => onReader(node)}>{ui('阅读与编辑')}</Button>

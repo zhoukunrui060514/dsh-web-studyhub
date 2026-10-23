@@ -16,12 +16,12 @@ export default function LearningProvider({ children }) {
   const write = useMemo(() => createSessionWriter(core.call), [core.call]);
   useInjectCss(css, 'study-learning-loop');
   const api = {
-    openSession: setSessionId,
-    startSession: async args => { const result = await write('learning.session.start', { ...args, scope: sessionScope(args.scope) }); if (currentIdentity.current !== identity) return; setSessionId(result.id); await core.refresh(); },
+    openSession: id => setSessionId({ id, identity }),
+    startSession: async args => { const result = await write('learning.session.start', { ...args, scope: sessionScope(args.scope) }); if (currentIdentity.current !== identity) return; setSessionId({ id: result.id, identity }); await core.refresh(); },
     openDecision: async decision => {
       const { operation, args } = decision.action;
       const destination = decisionDestination(operation);
-      if (destination === 'session') { setSessionId(args.id); return; }
+      if (destination === 'session') { setSessionId({ id: args.id, identity }); return; }
       if (destination === 'materials') { nav.navigate('sources'); return; }
       if (destination === 'source') { await learn.openLearningTarget({ kind: 'source', id: args.id }); return; }
       if (destination === 'legacy') { nav.show.workflow(args.id); return; }
@@ -31,6 +31,6 @@ export default function LearningProvider({ children }) {
     },
   };
   return <LearningContext.Provider value={api}>{children}
-    {sessionId && <SessionPanel key={sessionId} id={sessionId} onClose={() => setSessionId(null)} />}
+    {sessionId?.identity === identity && <SessionPanel key={`${identity}:${sessionId.id}`} id={sessionId.id} onClose={() => setSessionId(null)} />}
   </LearningContext.Provider>;
 }

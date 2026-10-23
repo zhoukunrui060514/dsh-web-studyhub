@@ -31,6 +31,7 @@ import Generate from '../Generate.jsx';
 import Draft from '../Draft.jsx';
 import Review from '../Review.jsx';
 import { Button, PageHeader } from '../components/index.js';
+import { useLearning } from '../learning/LearningProvider.jsx';
 import { openIndexBuilder } from '../index-focus.js';
 import { useApp } from './app-context.js';
 import { SourceForm } from './modals/AddSourceDialog.jsx';
@@ -311,6 +312,7 @@ function SettingsView() {
 }
 
 function ReviewView({ feedback }) {
+  const learning = useLearning();
   const { data, core, nav, lib, set, session, learn, intents, dailyPlan, settingsEntry } = useApp();
   const run = session.run;
   // A finished round may change what today's plan shows next (practice progress is counted from the answers), so read it again once.
@@ -335,6 +337,7 @@ function ReviewView({ feedback }) {
   };
   return (
     <>
+      {run.learningSessionId && <Button variant="quiet" onClick={() => learning.openSession(run.learningSessionId)}>{ui('返回本次学习')}</Button>}
       <RelatedTasks plan={dailyPlan} runId={run.id} onBoard={() => nav.navigate('board')} />
       <Review session={session} data={data} shellTitle={shellTitleOf('review', { run, decks: data?.decks })} feedback={feedback}
         coachProps={data ? { ...session.coach, destination: run.complete ? session.continueTo(dailyPlan) : undefined } : undefined} links={links}
