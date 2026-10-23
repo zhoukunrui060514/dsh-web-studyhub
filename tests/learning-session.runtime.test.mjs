@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { StudyService } from '../lib/service.js';
 import { courseOutlineMaterial } from '../lib/course-outline-book.js';
+import { resolveSessionTarget } from '../lib/learning-session-target.js';
 import { groupSourcesByDocument } from '../lib/source-groups.js';
 
 async function fixture(t) {
@@ -21,55 +22,68 @@ async function fixture(t) {
   return { root, service, args: { scope: { kind: 'course', courseId }, target: { kind: 'topic', deckId: 'deck', topic: '主题' }, origin: 'knowledge', requestId: 'start-1' } };
 }
 
+// Existing four-step clients are exercised against explicit persisted v1 fixtures.
+async function legacyStart(service, args) {
+  const session = await service.call('learning.session.start', args);
+  if (session.schemaVersion !== 1) await service.store.update(state => {
+    const live = state.learningSessions.find(s => s.id === session.id);
+    const resolved = resolveSessionTarget(state, args.scope, args.target);
+    Object.assign(live, { schemaVersion: 1, step: 'explain', outcome: null,
+      records: Object.fromEntries(['explain', 'retell', 'practice', 'summary'].map(step => [step, { status: 'pending', content: step === 'explain' ? resolved.explanation : '' }])) });
+    delete live.phase; delete live.currentRunId; delete live.readingPosition;
+  });
+  return service.call('learning.session.get', { id: session.id });
+}
+
 const update = (service, action, session, extra = {}) => service.call(`learning.session.${action}`, { id: session.id, version: session.version, requestId: `${action}:${session.version}`, ...extra });
 
 test('different clicks and entry points reuse unfinished study and retain retry receipts', async t => {
   const { service, args } = await fixture(t);
-  const sessions = await Promise.all(Array.from({ length: 4 }, (_, i) => service.call('learning.session.start', {
+  const sessions = await Promise.all(Array.from({ length: 4 }, (_, i) => legacyStart(service, {
     ...args, origin: i % 2 ? 'reinforcement' : 'knowledge', requestId: `click-${i}`,
   })));
   assert.equal(new Set(sessions.map(s => s.id)).size, 1);
   let session = await update(service, 'record', sessions[0], { step: 'explain', content: '已经学到这里' });
   session = await update(service, 'advance', session);
   session = await update(service, 'pause', session);
-  const reused = await service.call('learning.session.start', { ...args, requestId: 'later-click' });
+  const reused = await legacyStart(service, { ...args, requestId: 'later-click' });
   assert.equal(reused.id, session.id);
   assert.equal(reused.step, 'retell');
   assert.equal(reused.status, 'paused');
   assert.equal(reused.records.explain.content, '已经学到这里');
-  await assert.rejects(service.call('learning.session.start', { ...args, requestId: 'later-click', origin: 'today' }), { code: 'learning-request-conflict' });
+  await assert.rejects(legacyStart(service, { ...args, requestId: 'later-click', origin: 'today' }), { code: 'learning-request-conflict' });
   assert.equal((await service.store.read()).learningSessions.length, 1);
 });
 
 test('completed study and changed material allow a new round without changing history', async t => {
   const { service, args } = await fixture(t);
-  let session = await service.call('learning.session.start', args);
+  let session = await legacyStart(service, args);
   for (let i = 0; i < 4; i++) session = await update(service, 'advance', session, { skip: true, reason: '本轮跳过' });
-  const next = await service.call('learning.session.start', { ...args, requestId: 'next' });
+  const next = await legacyStart(service, { ...args, requestId: 'next' });
   assert.notEqual(next.id, session.id);
   await service.store.update(state => { state.sources[0].text += '修订'; });
-  const revised = await service.call('learning.session.start', { ...args, requestId: 'revised' });
+  const revised = await legacyStart(service, { ...args, requestId: 'revised' });
   assert.notEqual(revised.id, next.id);
   assert.equal((await service.call('learning.session.get', { id: session.id })).status, 'completed');
-  assert.equal((await service.call('learning.session.start', { ...args, requestId: 'next' })).id, next.id);
+  assert.equal((await legacyStart(service, { ...args, requestId: 'next' })).id, next.id);
 });
 
 test('a reused start cannot take a receipt ID already used to save notes', async t => {
   const { service, args } = await fixture(t);
-  const session = await service.call('learning.session.start', args);
+  const session = await legacyStart(service, args);
   await update(service, 'record', session, { step: 'explain', content: '已有笔记', requestId: 'shared-id' });
   const before = await service.store.read();
-  await assert.rejects(service.call('learning.session.start', { ...args, requestId: 'shared-id' }), { code: 'learning-request-conflict' });
+  await assert.rejects(legacyStart(service, { ...args, requestId: 'shared-id' }), { code: 'learning-request-conflict' });
   assert.deepEqual(await service.store.read(), before);
 });
 
 test('fixed session start is idempotent and content, pause, version conflicts and readonly history survive reload', async t => {
   const { root, service, args } = await fixture(t);
-  const [one, two] = await Promise.all([service.call('learning.session.start', args), service.call('learning.session.start', args)]);
+  const [one, two] = await Promise.all([legacyStart(service, args), legacyStart(service, args)]);
   assert.equal(one.id, two.id);
   assert.equal(one.schemaVersion, 1);
   assert.equal(one.step, 'explain');
-  await assert.rejects(service.call('learning.session.start', { ...args, origin: 'today' }), { code: 'learning-request-conflict' });
+  await assert.rejects(legacyStart(service, { ...args, origin: 'today' }), { code: 'learning-request-conflict' });
   let session = await update(service, 'record', one, { step: 'explain', content: '讲解内容' });
   assert.equal((await update(service, 'record', one, { step: 'explain', content: '讲解内容' })).version, session.version);
   await assert.rejects(update(service, 'pause', one), { code: 'learning-version-conflict' });
@@ -95,7 +109,7 @@ test('fixed session start is idempotent and content, pause, version conflicts an
 
 test('practice uses a single atomic existing study run; real answers advance without a second grading system', async t => {
   const { service, args } = await fixture(t);
-  let session = await service.call('learning.session.start', args);
+  let session = await legacyStart(service, args);
   session = await update(service, 'record', session, { step: 'explain', content: '讲解' });
   session = await update(service, 'advance', session, { requestId: 'a1' });
   session = await update(service, 'record', session, { step: 'retell', content: '我能复述' });
@@ -117,7 +131,7 @@ test('practice uses a single atomic existing study run; real answers advance wit
 });
 
 async function atPractice(service, args) {
-  let session = await service.call('learning.session.start', args);
+  let session = await legacyStart(service, args);
   session = await update(service, 'advance', session, { requestId: 'e', skip: true, reason: '直接自测' });
   return update(service, 'advance', session, { requestId: 'r', skip: true, reason: '本轮跳过复述' });
 }
@@ -299,8 +313,8 @@ test('practice commit failure rolls back both run and association; a different l
 
 test('semantically identical start requests ignore JSON property order; missing source is visible as unavailable', async t => {
   const { service, args } = await fixture(t);
-  const first = await service.call('learning.session.start', args);
-  const second = await service.call('learning.session.start', {
+  const first = await legacyStart(service, args);
+  const second = await legacyStart(service, {
     requestId: args.requestId, origin: args.origin, target: { topic: args.target.topic, deckId: args.target.deckId, kind: args.target.kind }, scope: args.scope,
   });
   assert.equal(second.id, first.id);
