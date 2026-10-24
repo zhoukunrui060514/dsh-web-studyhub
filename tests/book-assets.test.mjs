@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { putBookAsset, readBookAsset, validateBookImage } from '../lib/book-assets.js';
 import { aiBlock, aiBlocks, replaceAiBlock } from '../lib/course-book-ai-text.js';
 
-export const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=', 'base64');
+import { PNG } from './helpers/book-image.mjs';
 test('immutable raster storage deduplicates by content; current and history references authorize only this library', async t => {
   const root = await mkdtemp(join(tmpdir(), 'book-assets-'));
   t.after(() => rm(root, { recursive: true, force: true }));

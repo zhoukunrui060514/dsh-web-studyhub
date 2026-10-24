@@ -1,0 +1,51 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { putBookAsset } from '../lib/book-assets.js';
+import { exportBookAssets, verifyBookAssets, restoreBookAssets } from '../lib/book-assets-backup.js';
+import { PNG } from './helpers/book-image.mjs';
+import { StudyService } from '../lib/service.js';
+import { splitPortableBackup } from '../lib/portable-parts.js';
+import { withBookAssetExport } from '../lib/book-assets-export.js';
+
+test('backup carries current, suggestion and history references once and rejects missing or changed assets', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'assets-backup-')), other = await mkdtemp(join(tmpdir(), 'assets-restored-'));
+  t.after(async () => { await rm(root, { recursive: true, force: true }); await rm(other, { recursive: true, force: true }); });
+  const asset = await putBookAsset(root, PNG), text = `![图](studyhub://asset/${asset.id})`;
+  const state = { sources: [{ bookDoc: { assets: { [asset.id]: asset }, files: { current: { text }, suggested: { text: '', suggestions: [{ text }] } } } }] };
+  const histories = [{ entries: [{ text }] }];
+  const section = await exportBookAssets(root, state, histories);
+  assert.equal(section.files.length, 1);
+  const verified = verifyBookAssets(section, state, histories);
+  await restoreBookAssets(other, verified);
+  assert.deepEqual(await exportBookAssets(other, state, histories), section);
+  assert.throws(() => verifyBookAssets({ ...section, files: [] }, state, histories), /missing/);
+  assert.throws(() => verifyBookAssets({ ...section, files: [{ ...section.files[0], dataBase64: PNG.subarray(0, 20).toString('base64') }] }, state, histories));
+});
+
+test('library restore verifies all image resources and staged parts before replacing state', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'assets-service-')), service = new StudyService(root);
+  t.after(async () => { await service.dispose(); await rm(root, { recursive: true, force: true }); });
+  const asset = await putBookAsset(root, PNG), text = `![图](studyhub://asset/${asset.id})`;
+  await service.store.update(s => { s.sources.push({ id: 'book', title: '书', text: '', provenance: 'course-book-doc', bookDoc: { assets: { [asset.id]: asset }, files: { 'n.mine.md': { text } } } }); });
+  const backup = await service.call('export');
+  assert.equal(backup.portableBookAssets.files.length, 1);
+  const bad = structuredClone(backup); bad.portableBookAssets.files = [];
+  const before = await service.store.read();
+  await assert.rejects(service.call('restore', { state: bad }), /missing image/);
+  assert.deepEqual(await service.store.read(), before);
+  const split = splitPortableBackup(backup), prepared = await service.call('backup.restore.prepare', { manifest: split.manifest });
+  await service.call('backup.restore.upload', { transferId: prepared.transferId, part: split.parts[0] });
+  await assert.rejects(service.call('backup.restore.commit', { transferId: prepared.transferId }), /missing parts/);
+  assert.deepEqual(await service.store.read(), before);
+  for (const part of split.parts) await service.call('backup.restore.upload', { transferId: prepared.transferId, part });
+  await service.call('backup.restore.commit', { transferId: prepared.transferId });
+  assert.deepEqual((await service.call('export')).portableBookAssets, backup.portableBookAssets);
+  const single = await withBookAssetExport(root, before, { status: 'ok', form: 'single', text });
+  assert.match(single.text, /data:image\/png;base64,/);
+  const folder = await withBookAssetExport(root, before, { status: 'ok', form: 'folder', files: [{ name: 'book.md', text }] });
+  assert.match(folder.files[0].text, /images\/[a-f0-9]{64}\.png/);
+  assert.equal(folder.images[0].assetId, asset.id);
+});

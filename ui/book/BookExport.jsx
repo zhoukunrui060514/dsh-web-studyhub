@@ -4,7 +4,7 @@ import { Badge, Button, Dialog, Field, Hint, LoadingState, NumberInput, RadioCar
 import { useStudy } from '../study-context.jsx';
 import { useLiveEffect } from '../use-async.js';
 import { PAGE_LIMIT_MAX } from '../../lib/book-settings.js';
-import { downloadText } from './download.js';
+import { downloadText, downloadImage } from './download.js';
 
 /* 「导出」 of the review book (M6, docs/plans/review-book.md): the book as the learner's printable CP (course.book.export, lib/course-book-export.js):
    查找页 first, question links as numbered questions, with or without the 答案册; one Markdown file to download, or the files of the folder one by one
@@ -50,11 +50,12 @@ export default function BookExport({ course, pageLimit, onClose }) {
   const saved = Number.isInteger(pageLimit) ? pageLimit : null, budget = estimate ? budgetText(estimate.pages, saved) : null;
   const footer = <>
     <Button variant="secondary" icon="list" disabled={!done} onClick={folder ? () => setFolder(null) : openFolder} aria-expanded={!!folder}>{folder ? ui('收起文件清单') : ui('分文件导出…')}</Button>
-    <Button variant="primary" icon="download" disabled={!done} onClick={() => downloadText(done.filename, done.text)}>{ui('下载 Markdown')}</Button>
+    <Button variant="primary" icon="download" disabled={!done || done.singleUnavailable} onClick={() => downloadText(done.filename, done.text)}>{ui('下载 Markdown')}</Button>
   </>;
   return (
     <Dialog title={ui('导出复习全书')} size="md" className="book-export" onClose={onClose} footer={footer}>
       <div className="book-export__body">
+        {done?.singleUnavailable && <Hint>{done.reason}</Hint>}
         <p className="book-export__lead">{ui('导出成你自己的开卷速查：前面是查找页（目录、按题型、按概念、易错点），题目链接换成编号的题目，标记都去掉。')}</p>
         <RadioCardGroup legend={ui('印哪些题')} className="book-export__questions">
           {questionChoices().map(choice => <RadioCard key={choice.value} name="book-export-questions" value={choice.value} checked={questions === choice.value}
@@ -78,6 +79,9 @@ export default function BookExport({ course, pageLimit, onClose }) {
               <Button variant="link" size="sm" icon="download" className="book-export__file" onClick={() => downloadText(file.name, file.text, file.name.endsWith('.yaml') ? 'text/yaml' : 'text/markdown')}>{file.name}</Button>
             </li>)}
           </ul>
+          {!!folder.images?.length && <><Hint>{ui('下载图片后放到 Markdown 同级的 images 文件夹，文件名保持不变。')}</Hint><ul>{folder.images.map(image => <li key={image.name}>
+            <Button variant="link" onClick={async () => { try { downloadImage(image.name, await call('materials.book.asset.get', { assetId: image.assetId })); } catch (failure) { notify({ text: errorMessage(failure), tone: 'error' }); } }}>{image.name}</Button>
+          </li>)}</ul></>}
         </div>}
       </div>
     </Dialog>

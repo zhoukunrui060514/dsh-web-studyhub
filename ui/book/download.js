@@ -11,3 +11,10 @@ export function downloadText(filename, text, mime = 'text/markdown') {
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+export function downloadImage(filename, image) {
+  const bytes = Uint8Array.from(atob(image.dataBase64), ch => ch.charCodeAt(0));
+  const url = URL.createObjectURL(new Blob([bytes], { type: image.mime }));
+  const link = document.createElement('a'); link.href = url; link.download = filename.split('/').at(-1);
+  link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

@@ -271,7 +271,9 @@ function SettingsView() {
   const { appearance, updateAppearance } = shell;
   async function exportData() {
     try {
-      const backup = await call('export');
+      const prepared = await call('backup.export.prepare');
+      if (prepared.mode === 'parts') return prepared;
+      const backup = prepared.state;
       const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }));
       const link = document.createElement('a');
       link.href = url;
