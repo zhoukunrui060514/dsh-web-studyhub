@@ -110,3 +110,6 @@ export function safeStudyImage(src) {
     return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : null;
   } catch { return null; }
 }
+
+/** The private resource protocol is resolved by StudyImage, never passed to an img directly. */
+export const studyAssetId = src => /^studyhub:\/\/asset\/([a-f0-9]{64})$/.exec(String(src ?? ''))?.[1] ?? null;
