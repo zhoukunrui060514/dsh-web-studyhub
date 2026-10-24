@@ -10,7 +10,7 @@ import { rowOf } from './model.js';
 
 /** ai: ui/book/use-book-ai.js; rows: the book's rows (the point of a heading); book: course.book.open (its files' versions for the chat); model: modelReadiness;
     pageRef: the page element. */
-export default function BookAskLayer({ ai, rows, book, course, model, pageRef }) {
+export default function BookAskLayer({ ai, rows, book, course, model, pageRef, onChanged }) {
   const send = useSendToChat(course);
   const host = pageRef.current;
   // What the two follow: the page's scroller (its scroll moves them), and as their bounds the page's own column within the visible part of the scroller, so
@@ -37,7 +37,7 @@ export default function BookAskLayer({ ai, rows, book, course, model, pageRef })
       onExplain={({ heading, words }) => ai.start({ heading, mode: 'explain', words })}
       onWrite={({ heading, words, range }) => ai.openAsk({ heading, words, anchor: range })}
       onSend={({ heading, words }) => toChat({ heading, words })} />
-    {ask && <BookAsk key={`${ask.heading}|${ask.words ?? ''}`} target={ask} host={host} scrollerRef={scrollerRef} model={model}
+    {ask && <BookAsk key={`${course}|${ask.heading}|${ask.words ?? ''}`} course={course} onChanged={onChanged} target={ask} host={host} scrollerRef={scrollerRef} model={model}
       onWrite={args => ai.start({ heading: ask.heading, ...args })} onSend={({ words, instruction }) => toChat({ heading: ask.heading, words, instruction })} onClose={ai.closeAsk} />}
   </>;
 }

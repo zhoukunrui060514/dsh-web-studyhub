@@ -119,7 +119,7 @@ export default function BookPage({ data, onBack, onPractice, onOpenSource, onCre
     );
   }
   // The selection toolbar and the 问 AI panel (a new selection or title is a new panel, its box empty).
-  const askPanel = <BookAskLayer ai={ai} rows={rows} book={book} course={course} model={modelReadiness(data)} pageRef={pageRef} />;
+  const askPanel = <BookAskLayer ai={ai} rows={rows} book={book} course={course} model={modelReadiness(data)} pageRef={pageRef} onChanged={reload} />;
   const over = pages !== null && pageLimit && pages > pageLimit;
   // Over the page limit: one quiet line under the bar (the estimate and how far over); its Tooltip says where the limit is changed.
   const notice = over ? { text: uiFormat('导出约 {0} 页，超过 {1} 页的上限', [pages, pageLimit]), tip: uiFormat('上限是 {0} 页：在「导出…」里改，留空就是不限。', [pageLimit]) } : null;

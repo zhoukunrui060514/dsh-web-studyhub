@@ -6,6 +6,7 @@ import { formatNumber } from '../format.js';
 import { aiSize, aiSummary } from './ai-summary.js';
 import { markLabels } from './ai-labels.js';
 import { AI_FOLD_CHARS } from './point-parts.js';
+import { FigureControls } from './ExplanationControls.jsx';
 
 /* An AI block of the review book (弄懂 / 写一段 / 加一段, docs/review-book.md "AI blocks"): in its point (ui/book/PointBody.jsx) right after the paragraph its
    words are in, or in 我的 when it is for the whole point (ui/book/PointLayer.jsx); its words dashed in the paragraph. It is the learner's text: 保留 marks it as
@@ -38,7 +39,7 @@ function BlockMenu({ block, busy, onAction }) {
     busy; folded, onFold(id, on): the fold; anchored, onWords(id): the block's words are marked in the paragraph and a press goes back to them; repeat: it mostly
     restates the point's notes (多为重复, ui/book/point-parts.js); rewriting: the line of its 重新生成 (ui/book/ai-lines.js) while it runs, onCancel(line).
     A folded row is always one line (its summary cut with an ellipsis), as high as the line a task leaves; data-ai-landed is a landed block's short highlight. */
-export default function BookAiBlock({ item, resolveLink, onAction, onFollow, busy = false, folded = false, onFold, anchored = false, onWords, repeat = false, rewriting = null, onCancel }) {
+export default function BookAiBlock({ item, resolveLink, onAction, onFollow, busy = false, folded = false, onFold, anchored = false, onWords, repeat = false, rewriting = null, onCancel, course, heading, onChanged }) {
   const { block, status } = item, gone = status === 'gone';
   const [question, setQuestion] = useState('');
   const summary = useMemo(() => (folded ? aiSummary(block.body) : ''), [folded, block.body]);
@@ -63,6 +64,7 @@ export default function BookAiBlock({ item, resolveLink, onAction, onFollow, bus
           {rewriting.kind === 'writing' && <Button variant="link" size="sm" onClick={() => onCancel?.(rewriting)}>{ui('取消')}</Button>}</span>}
         {folded && !rewriting && <BlockMenu block={block} busy={stuck} onAction={onAction} />}
       </div>
+      {block.metadata?.handoff && course && <FigureControls key={block.metadata.handoff.requestId} course={course} heading={heading} after={block.id} words={block.mode === 'here' ? '' : block.about} handoff={block.metadata.handoff} onChanged={onChanged} />}
       {!folded && <>
         {/* What it is about: the dashed words go back by a press; a whole-point block is about its heading, which is right above. */}
         {block.mode !== 'here' && block.first && (anchored

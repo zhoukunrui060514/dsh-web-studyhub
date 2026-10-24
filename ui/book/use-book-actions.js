@@ -83,6 +83,9 @@ export function useBookHandlers({ call, course, notify, book, setBook, rows, rel
     ask: (node, element) => ai.openAsk({ heading: node.hid, anchor: element }),
     aiAction: async (node, action, block) => {
       if (action === 'again') {
+        if (block.metadata?.kind === 'figure') {
+          ai.start({ image: true, heading: node.hid, ...(block.at.startsWith('h:') ? {} : { words: block.about }), replace: block.id }); return;
+        }
         ai.start({ heading: node.hid, mode: block.mode === 'follow' ? 'follow' : block.mode, ...(block.mode !== 'here' ? { words: block.about } : {}),
           ...(block.ask ? { instruction: block.ask } : {}), replace: block.id });
         return;

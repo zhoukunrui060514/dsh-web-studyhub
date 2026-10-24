@@ -66,7 +66,7 @@ export default function PointBody({ node, course, handlers, level = 4 }) {
   const renderBlock = item => (item.block.line
     ? <BookAiLine key={item.block.id} line={item.block.line} onCancel={handlers.aiCancel} onRetry={handlers.aiRetry} onDismiss={handlers.aiDismiss} onUndo={handlers.aiUndo}
       onForget={handlers.aiForget} />
-    : <BookAiBlock key={item.block.id} item={item} resolveLink={resolve} busy={handlers.busy} onAction={(action, block) => handlers.aiAction?.(node, action, block)}
+    : <BookAiBlock key={item.block.id} item={item} course={course} heading={node.hid} onChanged={handlers.reload} resolveLink={resolve} busy={handlers.busy} onAction={(action, block) => handlers.aiAction?.(node, action, block)}
       onFollow={(block, question) => handlers.aiFollow?.(node, block, question)} folded={isFolded(item)} onFold={aiFold?.fold}
       anchored={anchored.has(item.block.id)} onWords={handlers.aiWords} repeat={view.repeats.has(item.block.id)} rewriting={view.rewriting.get(item.block.id) ?? null}
       onCancel={handlers.aiCancel} />);

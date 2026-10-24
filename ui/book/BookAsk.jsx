@@ -4,6 +4,7 @@ import { Button, CloseButton, TextArea, Tooltip } from '../components/index.js';
 import ModelSetupGate from '../ModelSetupGate.jsx';
 import useRangeAnchor from '../document-preview/translation/useRangeAnchor.js';
 import { askStaysOpen } from './ask-visibility.js';
+import { FigureControls, useImageCapability } from './ExplanationControls.jsx';
 
 /* 「问 AI」 of the review book (docs/review-book.md "Ask AI"): ONE box, two destinations. Opened by 「✦ 问 AI」 at a point's title (about the whole point) or by
    「写一段…」 of the selection toolbar (about the selected words, shown on top). One tap on a preset fills the box. 「写进这个知识点」 writes with the app's model
@@ -31,12 +32,13 @@ export function AskRow({ children, onAsk }) {
 
 /** scope: 'point' (the title's 问 AI), 'selection' (words selected) or 'book' (the whole book, 发给主会话 only); model: modelReadiness; onWrite({ instruction })
     (absent: no 写进这个知识点); onSend({ instruction }) -> a promise. */
-export function AskForm({ scope, model, onWrite, onSend, autoFocus = false }) {
+export function AskForm({ scope, model, onWrite, onSend, autoFocus = false, imageAvailable = false }) {
   const [text, setText] = useState(''), [sending, setSending] = useState(false);
+  const [allowFigure, setAllowFigure] = useState(false);
   const off = !!onWrite && !model?.ready, asked = text.trim();
   // Over selected words an empty box is 弄懂; about the whole point it needs something to write.
   const canWrite = !!onWrite && !off && (scope === 'selection' || !!asked);
-  const write = () => { if (canWrite) onWrite({ instruction: asked }); };
+  const write = () => { if (canWrite) onWrite({ instruction: asked, allowFigure }); };
   const send = async () => { if (sending) return; setSending(true); try { await onSend({ instruction: asked }); } finally { setSending(false); } };
   return (
     <form className="book-ask__form" data-book-ask-form={scope} onSubmit={event => { event.preventDefault(); if (onWrite) write(); else send(); }}>
@@ -55,6 +57,7 @@ export function AskForm({ scope, model, onWrite, onSend, autoFocus = false }) {
           <Button size="sm" variant={onWrite ? 'quiet' : 'secondary'} type="button" busy={sending} data-book-ask="chat" onClick={send}>{ui('发给主会话')}</Button>
         </Tooltip>
       </div>
+      {onWrite && imageAvailable && <label><input type="checkbox" checked={allowFigure} onChange={event => setAllowFigure(event.target.checked)} />{ui('本次允许配图')}</label>}
       {off && <ModelSetupGate variant="compact" feature="bookAi" model={model} />}
       {scope === 'book' && <p className="book-ask__hint">{ui('也可以直接在主对话里说你想怎么改，主会话会按 study-book 改书，每次改动都能回退')}</p>}
     </form>
@@ -63,7 +66,8 @@ export function AskForm({ scope, model, onWrite, onSend, autoFocus = false }) {
 
 /** target: { heading, words?, anchor (the 问 AI button, or the selection's range: anything with getClientRects) }; host: the page element the panel is placed in;
     scrollerRef: what scrolls the page; model; onWrite({ mode, words?, instruction? }); onSend({ words?, instruction }) -> a promise; onClose(). */
-export default function BookAsk({ target, host, scrollerRef, model, onWrite, onSend, onClose }) {
+export default function BookAsk({ target, host, scrollerRef, model, onWrite, onSend, onClose, course, onChanged }) {
+  const imageAvailable = useImageCapability();
   const panel = useRef(null), anchor = useRef(target.anchor), latest = useRef(null);
   anchor.current = target.anchor;
   const selected = !!target.words;
@@ -100,9 +104,10 @@ export default function BookAsk({ target, host, scrollerRef, model, onWrite, onS
         <CloseButton size="sm" label={ui('关闭')} onClick={onClose} />
       </div>
       {selected && <p className="book-ask__words">{`「${words.length > 80 ? `${words.slice(0, 79)}…` : words}」`}</p>}
-      <AskForm scope={selected ? 'selection' : 'point'} model={model}
-        onWrite={({ instruction }) => onWrite(selected ? { mode: instruction ? 'write' : 'explain', words, ...(instruction ? { instruction } : {}) } : { mode: 'here', instruction })}
+      <AskForm scope={selected ? 'selection' : 'point'} model={model} imageAvailable={imageAvailable}
+        onWrite={({ instruction, allowFigure }) => onWrite({ ...(selected ? { mode: instruction ? 'write' : 'explain', words, ...(instruction ? { instruction } : {}) } : { mode: 'here', instruction }), allowFigure })}
         onSend={({ instruction }) => onSend({ words, instruction })} />
+      {course && <FigureControls key={`${course}|${target.heading}|${words}`} course={course} heading={target.heading} words={words} onChanged={onChanged} />}
     </div>
   );
 }

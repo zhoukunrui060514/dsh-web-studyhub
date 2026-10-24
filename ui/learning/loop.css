@@ -24,6 +24,11 @@
 .loop-footer { border-top: 1px solid var(--line); padding-top: 20px; display: flex; flex-wrap: wrap; gap: 24px; }
 .loop-basis { margin-top: 24px; }
 .loop-reading { max-width: 76ch; font-size: 16px; line-height: 1.9; }
+.explanation-controls, .explanation-figures { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-block: 16px; }
+.explanation-controls { flex-direction: column; align-items: flex-start; padding-block: 16px; }
+.explanation-controls label, .book-ask__form label { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+.explanation-figures span { font-size: 13px; color: var(--text-muted); }
+.loop-explanation { margin-block: 24px; padding-inline-start: 20px; border-inline-start: 2px solid var(--line); }
 .loop-loading { opacity: .65; transition: opacity 140ms ease; }
 .loop-detail { margin-block: 16px; padding: 18px; border-left: 2px solid var(--accent); }
 .loop-detail pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 400px; overflow: auto; }

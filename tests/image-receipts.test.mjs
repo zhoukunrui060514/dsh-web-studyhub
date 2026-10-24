@@ -1,9 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { imageReceipts } from '../lib/jobs/image-receipts.js';
+test('receipt status reads do not create runtime files', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'image-read-'));
+  try { assert.equal(await imageReceipts(root).get('absent'), null); assert.deepEqual(await readdir(root), []); }
+  finally { await rm(root, { recursive: true, force: true }); }
+});
 test('durable admission, payload conflicts, active aliases and unknown send survive recreation', async () => {
   const root = await mkdtemp(join(tmpdir(), 'image-receipts-'));
   try {

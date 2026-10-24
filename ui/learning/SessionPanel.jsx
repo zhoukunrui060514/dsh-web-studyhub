@@ -25,10 +25,12 @@ export default function SessionPanel({ id, onClose }) {
     const previous = currentRef.current;
     const result = await write(operation, { id, version: previous.version, ...args });
     const next = result.session ?? result; currentRef.current = next; setSaved(next);
+    if (args.readingPosition) position.current = null;
     await core.refresh(); query.refresh(); results.refresh(); return result;
   };
   const phase = current?.displayPhase ?? current?.phase;
   const disabled = !!working || current?.status !== 'active';
+  const runId = current?.currentRunId ?? current?.records?.practice?.runId;
   const move = next => run('move', () => mutate('learning.session.move', { phase: next, ...(position.current ? { readingPosition: position.current } : {}) }));
   const start = action => run('practice', async () => {
     if (position.current && currentRef.current.status === 'active') await mutate('learning.session.move', { phase: 'reading', readingPosition: position.current });
@@ -49,7 +51,7 @@ export default function SessionPanel({ id, onClose }) {
       <p className="loop-meta">{current.course.name || ui('未分类')} · {ui(current.status === 'completed' ? '已结束' : current.status === 'paused' ? '已暂停' : '进行中')}</p>
       {current.status !== 'completed' && <nav className="loop-steps" aria-label={ui('学习位置')}>
         {Object.entries(phaseLabels).map(([item, label]) => <Button key={item} variant="quiet" aria-current={phase === item ? 'step' : undefined}
-          disabled={disabled || item === 'results' && !current.currentRunId || item === 'practice' && phase === 'results'}
+          disabled={disabled || item === 'results' && !runId || item === 'practice' && phase === 'results'}
           onClick={() => item === 'practice' ? start('start') : move(item)}>{ui(label)}</Button>)}
       </nav>}
       {query.value?.basisStatus !== 'current' && <p className="loop-meta">{ui('原文已变化或不可用；当前练习和历史仍保留，新练习需要从当前知识点重新开始。')}</p>}
@@ -59,13 +61,13 @@ export default function SessionPanel({ id, onClose }) {
         <Button onClick={() => setShowCurrent(true)}>{ui('打开当前课件')}</Button>
       </div> : (phase === 'reading' || showCurrent) && <div className="loop-step">
         {reading.error && <p role="alert">{reading.error}</p>}
-        {reading.value && <LearningReader reading={reading.value} position={current.readingPosition} onPosition={value => { position.current = value; }} />}
+        {reading.value && <LearningReader reading={reading.value} onChanged={reading.refresh} position={current.readingPosition} onPosition={value => { position.current = value; }} />}
         {reading.loading && !reading.value && <p role="status">{ui('正在读取内容…')}</p>}
         {reading.value?.status === 'incomplete' && <Button variant="quiet" onClick={() => { nav.navigate('curriculum'); onClose(); }}>{ui('到课程大纲准备内容')}</Button>}
       </div>}
       {phase === 'practice' && <div className="loop-step"><p>{ui('练习使用现有题库与评分。可以继续作答，也可以结束本批查看部分结果。')}</p>
         <Button variant="primary" disabled={disabled} onClick={() => start('start')}>{ui('回到练习')}</Button>
-        <Button disabled={disabled} onClick={() => run('close', () => mutate('learning.session.practice.close', { expectedRunId: current.currentRunId }))}>{ui('结束本批')}</Button>
+        <Button disabled={disabled} onClick={() => run('close', () => mutate('learning.session.practice.close', { expectedRunId: runId }))}>{ui('结束本批')}</Button>
       </div>}
       {(phase === 'results' || current.status === 'completed') && results.value && <SessionResults results={results.value} />}
       {results.error && <p role="alert">{results.error}</p>}

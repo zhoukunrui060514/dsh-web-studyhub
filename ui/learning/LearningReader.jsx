@@ -1,14 +1,21 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import Markdown from '../Markdown.jsx';
 import { ui } from '../i18n.js';
+import { aiBlocks, withoutAiBlocks } from '../../lib/course-book-ai-text.js';
+import ExplanationControls, { FigureControls } from '../book/ExplanationControls.jsx';
 
 /** One content body for curriculum and learning. No model calls on render. */
-export function ReadingNode({ node }) {
+export function ReadingNode({ node, course, onChanged }) {
   return <article className="loop-reading" data-reading-node={node.key}>
-    <Markdown text={[node.gen, node.mine, node.qa].filter(Boolean).join('\n\n') || ui('这一节尚未编写讲解。')} />
+    <Markdown text={[node.gen, withoutAiBlocks(node.mine), node.qa].filter(Boolean).join('\n\n') || ui('这一节尚未编写讲解。')} />
+    {aiBlocks(node.mine).map(block => <aside key={block.id} className="loop-explanation" data-ai-block={block.id}>
+      <Markdown text={block.body} />
+      {block.metadata?.handoff && course && <FigureControls key={block.metadata.handoff.requestId} course={course} heading={node.hid} words={block.mode === 'here' ? '' : block.about} after={block.id} handoff={block.metadata.handoff} onChanged={onChanged} />}
+    </aside>)}
+    {course && node.hid && <ExplanationControls key={`${course}|${node.hid}`} course={course} node={node} onChanged={onChanged} />}
   </article>;
 }
-export default function LearningReader({ reading, onPosition, position }) {
+export default function LearningReader({ reading, onPosition, position, onChanged }) {
   const ref = useRef(null);
   useLayoutEffect(() => { if (ref.current) ref.current.scrollTop = position?.offset ?? 0; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return <div className="loop-reader" ref={ref} onScroll={event => {
@@ -18,7 +25,7 @@ export default function LearningReader({ reading, onPosition, position }) {
   }}>
     {reading.status === 'incomplete' && <p className="loop-meta">{ui('还没有完整讲解。可以先读已有内容、直接做题，或到课程大纲准备阅读内容。')}</p>}
     {reading.nodes.filter(node => node.leaf).map(node => <section key={node.key}>
-      <h3>{node.title}</h3><ReadingNode node={node} />
+      <h3>{node.title}</h3><ReadingNode node={node} course={reading.course} onChanged={onChanged} />
     </section>)}
     {!reading.nodes.length && <>
       {reading.references.map((ref, i) => <blockquote key={`${ref.sourceId}-${i}`}><Markdown text={ref.quote} /><cite>{ref.title}</cite></blockquote>)}

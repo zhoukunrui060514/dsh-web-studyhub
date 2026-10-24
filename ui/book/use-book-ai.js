@@ -51,6 +51,7 @@ export function useBookAi({ call, course, notify, reload, book, setBook, rows, a
   const edit = useCallback((key, change) => setLines(current => current.flatMap(line => (line.key !== key ? [line] : change ? [{ ...line, ...change(line) }] : []))), []);
   const stop = useCallback(async jobId => { try { await call('job.cancel', { jobId }); } catch { /* it had ended */ } }, [call]);
   const start = useCallback(async args => {
+    if (args.image && !args.requestId) args = { ...args, requestId: crypto.randomUUID() };
     setAsk(null);
     window.getSelection?.()?.removeAllRanges?.();
     const now = latest.current.rows, node = pointOf(now, args.heading), key = `line-${made += 1}`;
@@ -59,7 +60,8 @@ export function useBookAi({ call, course, notify, reload, book, setBook, rows, a
     setLines(current => [...current, { key, kind: 'writing', id: key, heading: args.heading, mode: args.mode, words: args.words ?? '', title: node?.title ?? '', after: args.after ?? null,
       replace: args.replace ?? null, was: args.replace ? rawOf(now, args.heading, args.replace) : null, args }]);
     try {
-      const started = await call('generation.courseBook.explain', { course, ...args });
+      const { image, ...payload } = args;
+      const started = await call(image ? 'generation.courseBook.illustrate' : 'generation.courseBook.explain', { course, ...payload });
       jobs.current.set(key, started.jobId);
       if (cancelled.current.delete(key)) { if (started.jobId) stop(started.jobId); return; }
       edit(key, () => ({ id: started.blockId || key, jobId: started.jobId }));

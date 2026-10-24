@@ -44,7 +44,7 @@ function CourseContent({ scope, onReader, onOutline }) {
     {shown.map(node => <article className="loop-row" key={node.id} style={{ marginInlineStart: `${depthOf(node) * 16}px` }}>
       <p className="loop-meta">{node.parentId ? ui('知识点') : ui('章节')}</p><h2>{node.title}</h2>
       {node.intro && <p>{node.intro}</p>}
-      {view === 'reading' && <ReadingNode node={node.reading ?? { key: node.id }} />}
+      {view === 'reading' && <ReadingNode node={node.reading ?? { key: node.id }} course={course} onChanged={query.refresh} />}
       {view === 'exam' && <>{!node.examPoints?.length && !node.exam?.evidence?.length && <p className="loop-meta">{ui('暂无已映射考点')}</p>}{node.examPoints?.map(point => <p key={point.id || point.pointId}>{point.title || point.text || point.pointId}</p>)}{node.exam?.evidence?.map((place, index) => <blockquote key={index}>{place.quote}</blockquote>)}</>}
       <Button disabled={!!working} onClick={() => run('start', () => learning.startSession({ scope, target: { kind: 'outline', nodeId: node.id, outlineRevision: result.outlineRevision }, origin: 'knowledge' }))}>{ui('学这个知识点')}</Button>
       <Button variant="quiet" onClick={() => onReader(node)}>{ui('阅读与编辑')}</Button>
