@@ -39,6 +39,43 @@ test('text commits before its automatic child; failed image preserves text and h
   assert.equal((await settleJob(w.service, first.jobId)).status, 'complete');
   const [block] = aiBlocks((await w.open()).nodes[0].children[0].mine); assert.match(block.body, /Mechanism explanation/); assert.ok(block.metadata.handoff.requestId); assert.match(block.metadata.handoff.expectedBlockRevision, /^[a-f0-9]{64}$/);
 });
+
+test('automatic figure hashes the saved text block after instruction clipping', async t => {
+  let calls = 0;
+  const w = await world(t, async () => { calls++; return { bytes: PNG }; });
+  const text = await w.service.call('generation.courseBook.explain', { ...w.args, mode: 'here', instruction: '说明机制'.repeat(100), allowFigure: true });
+  assert.equal((await settleJob(w.service, text.jobId)).status, 'complete');
+  const [block] = aiBlocks((await w.open()).nodes[0].children[0].mine);
+  assert.equal(block.ask.length, 300);
+  const child = await w.service.call('generation.courseBook.imageStatus', { requestId: block.metadata.handoff.requestId });
+  assert.ok(child.jobId, 'a valid saved explanation must submit its child');
+  assert.equal((await settleJob(w.service, child.jobId)).status, 'complete');
+  assert.equal(calls, 1);
+});
+
+test('persisted handoff carries the exact child request for save-only retry', async t => {
+  let calls = 0;
+  const w = await world(t, async () => { calls++; return { bytes: PNG }; });
+  const update = w.service.store.update.bind(w.service.store);
+  let failed = false;
+  w.service.store.update = (fn, ...rest) => update(async state => {
+    const result = await fn(state);
+    if (!failed && state.sources.some(s => Object.values(s.bookDoc?.files || {}).some(f => aiBlocks(f.text).some(b => b.metadata?.kind === 'figure')))) {
+      failed = true; throw new Error('injected one-time publication failure');
+    }
+    return result;
+  }, ...rest);
+  const text = await w.service.call('generation.courseBook.explain', { ...w.args, instruction: 'Explain the mechanism', language: 'en', allowFigure: true });
+  assert.equal((await settleJob(w.service, text.jobId)).status, 'complete');
+  const [block] = aiBlocks((await w.open()).nodes[0].children[0].mine), handoff = block.metadata.handoff;
+  const child = await w.service.call('generation.courseBook.imageStatus', { requestId: handoff.requestId });
+  assert.equal((await settleJob(w.service, child.jobId)).status, 'failed');
+  assert.equal((await w.service.call('generation.courseBook.imageStatus', { requestId: handoff.requestId })).status, 'result');
+  // Same shape as FigureControls, including the saved canonical fields overriding display text.
+  const retry = await w.service.call('generation.courseBook.illustrate', { course: w.args.course, heading: w.args.heading, words: block.about, after: block.id, instruction: handoff.figurePlan.prompt, ...handoff });
+  assert.equal((await settleJob(w.service, retry.jobId)).status, 'complete');
+  assert.equal(calls, 1);
+});
 test('target guards allow unrelated edits, reject missing replacements and reconcile a lost publication response', async t => {
   const w = await world(t, async () => ({ bytes: PNG })), state = structuredClone(await w.service.store.read()), plan = planAi(state, w.args);
   const args = { course: plan.course, leafId: plan.leaf.id, id: 'one', at: plan.at, about: plan.about, body: 'body', mode: 'explain', guard: plan.guard, receiptId: 'receipt', metadata: { receiptId: 'receipt' } };
