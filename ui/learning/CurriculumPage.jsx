@@ -61,7 +61,7 @@ export default function CurriculumPage({ reader }) {
   const { data, nav } = useApp(), [editing, setEditing] = useState(false);
   const scope = learningScope(data), key = JSON.stringify([data.root, scope]);
   if (editing) return <><Button variant="quiet" onClick={() => setEditing(false)}>{ui('返回统一大纲')}</Button>{reader}</>;
-  return <section className="page loop-page"><h1>{ui('课程大纲')}</h1><p className="loop-meta">{ui('同一份课程结构，按需要切换阅读与考点。')}</p>
+  return <section className="page loop-page" data-tour="curriculum-main"><h1>{ui('课程大纲')}</h1><p className="loop-meta">{ui('同一份课程结构，按需要切换阅读与考点。')}</p>
     {scope.kind === 'all' ? <p>{ui('请在顶栏选择一门课程，查看它的大纲。')}</p> : <CourseContent key={key} scope={scope} onReader={node => {
       if (node?.id) keepBook(data.root, data.focus.course, { target: `bk:${node.id}` });
       setEditing(true);
