@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { markInboxRead } from '../quick-actions.js';
 import { openInboxResult } from './inbox-open.js';
 
@@ -9,10 +9,13 @@ export function useInbox({ core, lib, nav, session, learn, data }) {
   const { setDetour } = lib.set;
   const latest = useRef(null);
   latest.current = { page: nav.page, run: session.run };
+  const root = useRef(data?.root); root.current = data?.root;
+  const [selected, setSelected] = useState(null);
 
   const verbs = useMemo(() => ({
     remember: learn.rememberContext, showPage: nav.show.page, openAudioSources: learn.openAudioSources, showNote: nav.show.note,
     enterRun: session.enterRun, explain: session.actions.showExplanation, detour: setDetour,
+    showExplanation: result => { setSelected({ root: root.current, id: result.id, value: result }); nav.show.page('inbox'); },
   }), [learn, nav.show, session, setDetour]);
 
   /** A letter jumps to its card: the spot in an open run when there is one, otherwise a one-card run that can return to the current question. */
@@ -20,7 +23,10 @@ export function useInbox({ core, lib, nav, session, learn, data }) {
     const from = learn.captureContext();
     const { page, run } = latest.current;
     const fromReview = page === 'review' && run && !run.complete;
-    act('inbox.open', { id: item.id, ...(fromReview ? { runId: from.runId } : {}) }, (result) => openInboxResult({ item, result, from, fromReview }, verbs));
+    const requestedRoot = root.current;
+    act('inbox.open', { id: item.id, ...(fromReview ? { runId: from.runId } : {}) }, (result) => {
+      if (requestedRoot === root.current) openInboxResult({ item, result, from, fromReview }, verbs);
+    });
   }, [act, learn, verbs]);
 
   // Letters about the question already on screen are read by looking at it. 定制题 letters stay: the variants themselves are not on this card.
@@ -31,5 +37,6 @@ export function useInbox({ core, lib, nav, session, learn, data }) {
     if (!seen.length) return;
     void markInboxRead(quick, { ids: seen }).then((outcome) => { if (outcome.ok) return refresh().catch(() => {}); return undefined; });
   }, [seenKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  return { openInboxItem };
+  return { openInboxItem, reader: selected?.root === data?.root ? selected : null, closeReader: () => setSelected(null),
+    openPage: () => { setSelected(null); nav.navigate('inbox', { animate: true, keepTrail: false }); } };
 }

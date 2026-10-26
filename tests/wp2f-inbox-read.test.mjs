@@ -71,6 +71,13 @@ const sink = () => {
     explain: record('explain'), detour: record('detour') };
 };
 
+test('a standalone explanation opens its reader without entering practice', () => {
+  const out = sink(); out.showExplanation = value => out.log.push(['reader', value]);
+  const point = { kind: 'explanation', id: 'letter' };
+  openInboxResult({ item: { kind: 'followup' }, result: point, from: { runId: 'active' }, fromReview: true }, out);
+  assert.deepEqual(out.log, [['reader', point]]);
+});
+
 test('a letter opens through its registry row: PDF and translation to Sources, audio to Sources or the audio page, a note to the notes', () => {
   for (const kind of ['pdf-result', 'pdf-failed', 'translate-result', 'translate-failed']) {
     const out = sink();
@@ -87,7 +94,7 @@ test('a letter opens through its registry row: PDF and translation to Sources, a
   }
   const bare = sink();
   openInboxResult({ item: { kind: 'audio-failed' }, result: result({ kind: 'audio' }), from: {}, fromReview: false }, bare);
-  assert.deepEqual(bare.log, [['remember', {}], ['page', 'audio']], 'a failed import has no transcript: the audio page');
+  assert.deepEqual(bare.log, [['remember', {}], ['page', 'tasks']], 'retired audio page: a failed import opens its task');
   const note = sink();
   openInboxResult({ item: { kind: 'note' }, result: result({ kind: 'note', noteId: 'n1' }), from: {}, fromReview: false }, note);
   assert.deepEqual(note.log, [['remember', {}], ['note', 'n1']]);

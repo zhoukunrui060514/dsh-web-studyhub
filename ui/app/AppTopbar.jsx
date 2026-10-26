@@ -1,8 +1,6 @@
 import React, { useContext } from 'react';
 import { ui, uiFormat } from '../i18n.js';
 import { isTransientStudyError } from '../transport.js';
-import { markInboxRead } from '../quick-actions.js';
-import Inbox from '../Inbox.jsx';
 import PageScope, { CourseChangeContext } from '../PageScope.jsx';
 import { spaceOf, viewLabelOf } from '../spaces.js';
 import { useTaskBadge } from '../tasks/use-task-badge.js';
@@ -61,8 +59,8 @@ export function CourseSwitch() {
 
 /** The top bar: where the page sits (space › page), the course every page follows, whether the host is working, the background tasks and the mailbox. */
 export default function AppTopbar({ title }) {
-  const { data, core, nav, connection, inbox, settingsEntry } = useApp();
-  const { busy, act, quick, quickApi } = core;
+  const { data, core, nav, connection, settingsEntry } = useApp();
+  const { busy } = core;
   const { binding, running, publishing, syncIssue } = connection;
   const idle = !busy && !running && !syncIssue && data;
   const space = spaceOf(nav.navPage);
@@ -92,10 +90,6 @@ export default function AppTopbar({ title }) {
             <Icon name="activity" size={16} />
             {tasks.total > 0 && <span className="top-tasks__count">{tasks.total}</span>}
           </Button>
-        )}
-        {data && (
-          <Inbox inbox={data.inbox} busy={busy} onOpen={inbox.openInboxItem} onReadAll={() => markInboxRead(quick)} readError={quickApi.failures['inbox:read']}
-            onUndo={(letter) => act(letter.kind === 'rewrite' ? 'coach.revert' : 'card.revert', { deckId: letter.deckId, cardId: letter.cardId })} />
         )}
       </div>
     </header>

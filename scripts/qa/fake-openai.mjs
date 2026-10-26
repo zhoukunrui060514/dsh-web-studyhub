@@ -62,7 +62,11 @@ export async function createFakeOpenAI({ port = 0, host = "127.0.0.1", model, be
         // DSH prepends <system-reminder> blocks to the user turn of every request, and a delegated call carries the plugin's instruction inside that turn: the study model is
         // asked what the plugin asked, and its handlers (which match on the system text) are shown the instruction as well.
         const asked = prompt.replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, "").trim();
-        let content = await study(asked, asked);
+        const boundary = '\n\nComplete only this bounded assessment task. Return the requested JSON as your final answer.\n\n';
+        const split = asked.indexOf(boundary);
+        // Native DSH wraps the instruction and JSON payload in one child message.
+        // Keep them separate so review reads the candidate, not the JSON schema in its instructions.
+        let content = split >= 0 ? await study(asked.slice(0, split), asked.slice(split + boundary.length)) : await study(asked, asked);
         let handled = studyLog.slice(before).some((entry) => entry.handler);
         if (!handled) { content = await study(system, asked); handled = studyLog.slice(before).some((entry) => entry.handler); }
         if (!handled) { const knowledge = knowledgeFixtureReply(system, asked); if (knowledge !== null) { content = knowledge; handled = true; } }

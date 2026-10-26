@@ -20,7 +20,7 @@ function spaceHint(id, { data, board }) {
    Language, appearance and the feature tour live in 设置; the update notice stays at the foot because it is news, not a setting. */
 export default function AppSidebar() {
   useInjectCss(css, 'study-app-shell');
-  const { data, host, core, shell, nav, board, spaces } = useApp();
+  const { data, host, core, shell, nav, board, spaces, inbox } = useApp();
   const { sidebarNarrow } = shell;
   const navRef = useRef(null), [navMark, setNavMark] = useState(null);
   /* One highlight glides to the active space instead of each row switching its own background, so a change of space reads as movement. */
@@ -38,7 +38,7 @@ export default function AppSidebar() {
     const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
     observer?.observe(element);
     return () => observer?.disconnect();
-  }, [spaces.current, sidebarNarrow, !!data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [spaces.current, nav.navPage, sidebarNarrow, !!data]); // eslint-disable-line react-hooks/exhaustive-deps
   const toggleLabel = sidebarNarrow ? ui('展开侧边栏') : ui('收起侧边栏');
   return (
     <aside className={sidebarNarrow ? 'sidebar is-narrow' : 'sidebar'}>
@@ -60,6 +60,9 @@ export default function AppSidebar() {
               hintClass={space.id === 'records' && hint ? 'nav-count is-due' : 'nav-count'} onClick={() => spaces.go(space.id)} />
           );
         })}
+        <NavItem icon={<Icon name="mail" />} label={ui('信箱')} data-tour="nav-inbox" data-usage="nav.inbox"
+          active={nav.navPage === 'inbox'} disabled={!data} hint={data?.inbox?.unread || undefined}
+          title={sidebarNarrow ? ui('信箱') : undefined} onClick={inbox.openPage} />
       </nav>
       <div className="sidebar-bottom">
         <UpdateCenter call={core.call} host={host} compact={sidebarNarrow} />

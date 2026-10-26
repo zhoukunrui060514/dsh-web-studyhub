@@ -62,7 +62,7 @@ test('registry helpers answer from the table: job kinds, hints, deck titles, mis
   assert.equal(registry.inboxOpenHint('translate-result'), '打开这份资料');
   assert.equal(registry.inboxOpenHint('audio-failed'), '打开音频转写结果');
   assert.equal(registry.inboxOpenHint('note'), '打开笔记草稿');
-  assert.equal(registry.inboxOpenHint('improve'), '跳到这道题');
+  assert.equal(registry.inboxOpenHint('improve'), '打开知识点讲解');
   assert.equal(registry.inboxOpenHint('improve', { missing: true }), '这道题已经不在题库里了');
   assert.equal(registry.inboxOpenHint('note', { missing: true }), '笔记已不存在');
   assert.equal(registry.inboxMissingPrompt('note'), '（笔记已删除）');
@@ -151,7 +151,7 @@ test('the panel reads tooltips from the registry and limits its height with Scro
   // The open hint is the last line of the entry's card (#178), not a native title, so two tooltips never show.
   assert.match(out, /mailbox-preview__hint">打开 PDF 转换结果</);
   assert.match(out, /mailbox-preview__hint">打开音频转写结果</);
-  assert.match(out, /mailbox-preview__hint">跳到这道题</);
+  assert.match(out, /mailbox-preview__hint">打开知识点讲解</);
   assert.doesNotMatch(out, /class="mailbox__item[^"]*"[^>]*\btitle=/);
   assert.match(out, /class="sh-scroll /);
   assert.match(out, /role="region"[^>]*aria-label="信箱消息"|aria-label="信箱消息"[^>]*role="region"/);

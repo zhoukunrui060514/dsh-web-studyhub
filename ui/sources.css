@@ -117,3 +117,10 @@
   from { box-shadow: 0 0 0 6px var(--accent-glow); }
   to { box-shadow: 0 0 0 0 transparent; }
 }
+
+@layer study.features {
+  :is(.study-app, .study-seat) {
+    .material-topup { margin-block: 8px 24px; }
+    .material-topup__result { padding: 12px 20px; margin-top: 12px; border-inline-start: 2px solid var(--line); }
+  }
+}

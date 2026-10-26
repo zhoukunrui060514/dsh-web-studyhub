@@ -10,11 +10,12 @@ test('five spaces own every learner page exactly once; shell utilities remain ou
   const owned = SPACES.flatMap(s => [...s.views, ...s.members]);
   assert.equal(new Set(owned).size, owned.length);
   for (const id of Object.keys(PAGES)) {
-    if (['settings', 'tasks'].includes(id)) continue;
+    if (['settings', 'tasks', 'inbox'].includes(id)) continue;
     assert.ok(spaceOf(id), id);
   }
   assert.equal(spaceOf('settings'), undefined);
   assert.equal(spaceOf('tasks'), undefined);
+  assert.equal(spaceOf('inbox'), undefined);
   assert.equal(headerViewOf('outline'), 'book');
   assert.equal(headerViewOf('draft'), 'bank');
   assert.equal(headerViewOf('review'), undefined);

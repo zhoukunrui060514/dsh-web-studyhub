@@ -82,11 +82,11 @@ test("conversation edits and links post letters that persist, fold per card and 
   assert.equal(inbox.items.length, 2, "reading keeps the history");
 });
 
-test("opening a letter lands on the card inside the current run, else a one-card run that returns", async (t) => {
+test("opening a non-explanation letter lands on its card inside the current run, else a one-card run that returns", async (t) => {
   const service = await setup(t);
   const run = await service.call("review.start", { mode: "path", scope: [{ deckId: "d1" }], fresh: true });
   const targetIndex = run.navigation.find((n) => n.cardId === "c3").index;
-  await service.store.update((s) => { notify(s, { kind: "followup", deckId: "d1", cardId: "c3", detail: "为什么？" }); });
+  await service.store.update((s) => { notify(s, { kind: "link", deckId: "d1", cardId: "c3", detail: "前置知识" }); });
   const letter = (await service.call("inbox")).items[0];
 
   const moved = await service.call("inbox.open", { id: letter.id, runId: run.id });

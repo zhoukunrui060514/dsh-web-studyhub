@@ -16,6 +16,7 @@ import { dropRequest, pinnedKeys, splitPinned, stepRequest } from '../lib/materi
 import { MasteryLine } from './document-preview/practice/MasteryMark.jsx';
 import { CoverageChip } from './coverage/Coverage.jsx';
 import DocumentTopUp, { offersDocumentTopUp } from './coverage/DocumentTopUp.jsx';
+import MaterialTopUp from './coverage/MaterialTopUp.jsx';
 import { modelReadiness } from './generation-status.js';
 import ModelSetupGate from './ModelSetupGate.jsx';
 import LargeDocumentCard from './LargeDocumentCard.jsx';
@@ -308,7 +309,7 @@ function GroupHead({ expanded, onToggle, children }) {
   </button>;
 }
 
-export default function Sources({ data, setModal, sourceForm, openAgent, onGenerate, onPractice, onOpenSources, onLegacyRetry, onOpenSettings, onBuildIndex, highlight }) {
+export default function Sources({ data, setModal, sourceForm, openAgent, onGenerate, onPractice, onOpenSources, onLegacyRetry, onOpenSettings, onBuildIndex, onTasks, highlight }) {
   const { busy, act, call } = useStudy();
   useInjectCss(css, "study-sources");
   const toast = useToast();
@@ -457,6 +458,7 @@ export default function Sources({ data, setModal, sourceForm, openAgent, onGener
           }}>{allOpen ? ui("全部收起") : ui("全部展开")}</Button>}
           {addButton}
         </>} />
+      {!showArchived && <MaterialTopUp key={scope} documentIds={filtered.map(item => item.key)} modelReady={modelReadiness(data).ready} onTasks={onTasks} />}
       {gap && <IndexGapLine count={gap.count} canIndex={indexCoverage?.canIndex} onGo={() => onBuildIndex(gap.course)} />}
       {items.length > 0 && <>
         <details className="source-organize" onToggle={event => setOrganizing(event.currentTarget.open)}>

@@ -4,6 +4,7 @@ import CurriculumPage from '../learning/CurriculumPage.jsx';
 import RecordsPage from '../learning/RecordsPage.jsx';
 import ReinforcementPage from '../learning/ReinforcementPage.jsx';
 import ActivityPage from '../learning/ActivityPage.jsx';
+import InboxPage from '../inbox/InboxPage.jsx';
 import ProcessingPlan from '../learning/ProcessingPlan.jsx';
 import { ui, uiFormat, setUiLanguage, errorMessage } from '../i18n.js';
 import { pageAvailable } from '../capabilities.js';
@@ -177,12 +178,12 @@ function ManageView() {
 }
 
 function SourcesView() {
-  const { data, host, lib, set, learn, sources, intents, settingsEntry } = useApp();
+  const { data, host, lib, set, learn, sources, intents, settingsEntry, nav } = useApp();
   return (
     <><ProcessingPlan /><Sources key={data.root} data={data} setModal={set.setModal} sourceForm={<SourceForm />}
       highlight={lib.sourceHighlight} openAgent={host.openAgent} onOpenSources={learn.openAudioSources}
       onOpenSettings={(section) => settingsEntry.openSettings(section === 'settings-marker' ? section : 'settings-mineru')} onBuildIndex={(course) => openIndexBuilder(settingsEntry.openSettings, course)} onGenerate={sources.generateFromSources}
-      onPractice={(scope) => intents.practice(scope)} /></>
+      onPractice={(scope) => intents.practice(scope)} onTasks={() => nav.navigate('tasks')} /></>
   );
 }
 
@@ -364,6 +365,7 @@ function KnowledgeView() {
   return <Knowledge key={data.root} openSource={evidence => learn.openSourceAt(evidence.sourceId, evidence.start, evidence)} openTasks={() => nav.navigate('tasks')} />;
 }
 export const PAGE_VIEWS = {
+  inbox: InboxPage,
   records: RecordsPage,
   knowledge: KnowledgeView,
   library: TodayPage, bank: BankView, workflows: WorkflowsView, skeleton: SkeletonView, dashboard: DashboardView, exam: ExamView, wrongbook: () => <ReinforcementPage legacy={<WrongBookView />} />, graph: GraphView,

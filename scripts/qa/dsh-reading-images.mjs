@@ -75,6 +75,20 @@ try {
   const block = aiBlocks((await call('course.book.open')).nodes[0].children[0].mine).find(b => b.metadata?.kind === 'figure'); assert.ok(block);
   const assetId = /studyhub:\/\/asset\/([a-f0-9]{64})/.exec(block.body)[1]; assert.equal((await call('materials.book.asset.get', { assetId })).dataBase64, PNG.toString('base64'));
   await call('generation.courseBook.illustrate', input); assert.equal(imageCalls, 1); summary.steps.push('native host image job, controlled asset and replay without duplicate HTTP request');
+  await call('source.add', { id: 'uncovered-native', title: '未覆盖的稳态资料', text: '负反馈通过反向调节纠正生理变量的偏差，使机体恢复内环境稳定。'.repeat(6), courses: [course] });
+  const uncovered = await call('coverage.get', { sourceId: 'uncovered-native' });
+  const batch = await call('generate.uncovered', { documentIds: [uncovered.key] }); assert.equal(batch.started.length, 1);
+  for (let i = 0; i < 120; i++) { const job = await call('job.status', { jobId: batch.started[0].jobId }); if (!['queued', 'running'].includes(job.status)) { await writeFile(join(out, 'uncovered-job.json'), JSON.stringify(job, null, 2)); assert.equal(job.status, 'complete', JSON.stringify(job.error || job.contract?.error || job.stage)); break; } await new Promise(done => setTimeout(done, 250)); }
+  const covered = await call('coverage.get', { documentId: uncovered.key }); assert.equal(covered.coverage.covered, covered.coverage.leaves);
+  summary.steps.push('native one-click uncovered generation uses existing draft pipeline');
+  const ref = { deckId: state.decks[0].id, cardId: state.decks[0].cards[0].id };
+  await call('card.followup.add', { ...ref, question: '独立讲解验收', answer: '这是一段从信箱独立阅读的知识点讲解。', source: 'assistant' });
+  const letter = (await call('inbox')).items.find(item => item.kind === 'followup'), beforeRead = await call('export');
+  await call('inbox.open', { id: letter.id }); const afterRead = await call('export'); assert.deepEqual(afterRead.runs, beforeRead.runs); assert.deepEqual(afterRead.attempts, beforeRead.attempts);
+  await page.locator('.sidebar [data-tour="nav-inbox"]').click(); await page.locator('.mailbox__item').first().click(); await page.locator('.inbox-reading').waitFor();
+  await page.getByText('这是一段从信箱独立阅读的知识点讲解。', { exact: true }).waitFor(); await page.screenshot({ path: join(out, 'native-inbox-reading.png') });
+  await openPage(page, 'sources'); await page.getByRole('button', { name: '一键补齐未覆盖', exact: true }).waitFor();
+  summary.steps.push('native sidebar inbox reads explanations without entering review');
   const courseId = (await call('course.list')).courses.find(c => c.name === course).id, scope = { kind: 'course', courseId };
   const curriculum = await call('curriculum.get', { scope, view: 'structure' });
   const target = { kind: 'outline', nodeId: 'what', outlineRevision: curriculum.outlineRevision };
@@ -89,6 +103,7 @@ try {
   assert.deepEqual(errors, []); summary.steps.push('native DSH Edge reading displays controlled image'); summary.imageCalls = imageCalls; summary.ok = true;
 } catch (error) { summary.ok = false; summary.error = error.message; process.exitCode = 1; }
 finally {
+  summary.textRequests = textModel?.log;
   await browser?.close(); stopTree(dsh?.child); if (dsh) await writeFile(join(out, 'dsh.log'), dsh.output().replace(/token=\S+/g, 'token=…'));
   await textModel?.close(); if (imageServer) await new Promise(done => imageServer.close(done)); summary.endedAt = new Date().toISOString();
   await writeFile(join(out, 'summary.json'), JSON.stringify(summary, null, 2)); console.log(JSON.stringify(summary));

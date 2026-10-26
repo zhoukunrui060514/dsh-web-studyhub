@@ -1,0 +1,11 @@
+@layer study.features {
+  :is(.study-app, .study-seat) {
+    .inbox-page, .inbox-reading { width: 100%; max-width: 960px; margin-inline: auto; }
+    .inbox-page .mailbox__item { padding: 20px 24px; }
+    .inbox-page .mailbox__row + .mailbox__row { border-top: 1px solid var(--line); }
+    .inbox-reading > .sh-button { margin-bottom: 24px; }
+    .inbox-reading__context { margin-block: 24px; color: var(--text-muted); }
+    .inbox-reading__body { margin-block: 32px 48px; font-size: 17px; line-height: 1.9; overflow-wrap: anywhere; }
+    .inbox-reading__sources { padding-top: 24px; border-top: 1px solid var(--line); }
+  }
+}

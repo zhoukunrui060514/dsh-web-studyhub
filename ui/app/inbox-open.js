@@ -4,6 +4,7 @@ import { inboxKind, jobDomainOf, opensExplanation } from '../../lib/inbox-kinds.
    screen shows it is read from the letter's row in lib/inbox-kinds.js (its job domain, its group), not from prefixes of its name.
    verbs: remember(from), showPage(id), openAudioSources(ids), showNote(id), enterRun(run), explain(), detour(from). */
 export function openInboxResult({ item, result, from, fromReview }, verbs) {
+  if (result.kind === 'explanation') { verbs.showExplanation(result); return; }
   const domain = jobDomainOf(item.kind);
   // A finished PDF conversion or translation opens Sources at its pages; a failed one opens it where its card is.
   if (domain === 'pdf' || domain === 'translate') {

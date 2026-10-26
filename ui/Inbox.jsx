@@ -63,6 +63,13 @@ function Letter({ m, busy, now, onOpen, onUndo, close }) {
   );
 }
 
+/** The same messages and actions on the full sidebar mailbox page. */
+export function InboxMessages({ inbox, busy, onOpen, onUndo }) {
+  useInjectCss(css, 'study-inbox'); useInjectCss(previewCss, 'study-inbox-preview');
+  const now = useNow(30000), items = inbox?.items || NO_ITEMS;
+  return items.length ? <div className="mailbox__list">{items.map(m => <div key={m.id} className="mailbox__row"><Letter m={m} busy={busy} now={now} onOpen={onOpen} onUndo={onUndo} close={() => {}} /></div>)}</div> : <EmptyMailbox />;
+}
+
 export default function Inbox({ inbox, busy, onOpen, onReadAll, onUndo, readError = "", defaultOpen = false }) {
   useInjectCss(css, "study-inbox");
   useInjectCss(previewCss, "study-inbox-preview");

@@ -23,6 +23,7 @@ export const PAGES = Object.freeze({
   knowledge: { label: '知识图谱', title: '知识图谱', glyph: 'skeleton', group: 'daily', needs: ['knowledge'], flag: 'knowledgeGraph' },
   generate: { label: '创建题组', title: '创建题组', glyph: 'generate', group: 'daily', needs: ['materials', 'bank', 'authoring', 'generation'] },
   tasks: { label: '任务', title: '任务', glyph: 'tasks', group: 'daily', needs: [] },
+  inbox: { label: '信箱', title: '信箱', glyph: 'mail', group: null, needs: [] },
   wrongbook: { label: '错题与待巩固', title: '错题与待巩固', glyph: 'wrongbook', group: 'daily', needs: ['bank', 'study'] },
   workflows: { label: '学习流', title: '学习流', glyph: 'workflows', group: 'daily', needs: ['workflows', 'bank', 'study'] },
   notes: { label: '学习笔记', title: '学习笔记', glyph: 'notes', group: 'daily', needs: ['notes'], onEnter: user((ctx) => ctx.clearNote()) },
