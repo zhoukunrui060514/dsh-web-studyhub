@@ -9,7 +9,7 @@ import { ModelSettingsContext } from '../ModelErrorNote.jsx';
 import { draftWork, draftWorkLabel } from '../draft-shortfall.js';
 import { isActiveJob } from '../job-visibility.js';
 import css from './coverage.css';
-import { actionLabel, allCoveredText, continueLine, coveragePathText, nextRoundText, shortfallWhy } from './copy.js';
+import { actionLabel, noTopUpText, continueLine, coveragePathText, nextRoundText, shortfallWhy } from './copy.js';
 import { describeFailure } from '../generation-status.js';
 import { continueArgs, continueNotice } from './top-up.js';
 import { draftShortfall } from './use-shortfall.js';
@@ -35,15 +35,15 @@ const WorkStatus = ({ draft, work, variant, percent }) => <div className={`draft
 /** The body: the round, the button and the estimate. `compact` is the home card's narrow column; `panel` the console header's popover. */
 function TopUpBody({ draft, view, shortfall, modelReady, held, onTopUp, variant }) {
   const { call, busy } = useStudy();
-  const round = view.round, units = view.coverage.units, cls = classOf(variant);
-  if (!round.sections) return <div className={cls} data-coverage-topup data-coverage-complete><p className="cov-topup__done">{allCoveredText(units)}</p></div>;
+  const round = view.round, cls = classOf(variant);
+  if (!round.sections) return <div className={cls} data-coverage-topup data-coverage-complete><p className="cov-topup__done">{noTopUpText(view.coverage)}</p></div>;
   const blocked = busy || held || !modelReady;
   const sectionIds = round.picks.map((pick) => pick.key);
   return <div className={cls} data-coverage-topup data-shortfall-action="topup">
     <p className="cov-topup__plan" data-coverage-round>{nextRoundText(shortfall)}</p>
     {coveragePathText(shortfall) && <p className="cov-topup__path" data-coverage-path>{coveragePathText(shortfall)}</p>}
     <div className="cov-topup__act">
-      <Button className="cov-topup__button" disabled={blocked} data-coverage-start title={!modelReady ? gateTitle('block') : held ? ui('草稿已在后台更新，先载入最新草稿，再补题。') : shortfall.reason === 'manual' ? ui('一次补一轮') : ui('补完这一轮后自动做下一轮，直到每个小节都有题；可以随时暂停或停下。')}
+      <Button className="cov-topup__button" disabled={blocked} data-coverage-start title={!modelReady ? gateTitle('block') : held ? ui('草稿已在后台更新，先载入最新草稿，再补题。') : shortfall.reason === 'manual' ? ui('一次补一轮') : ui(shortfall.evidenceIssues ? '补完这一轮后继续补齐可出题部分；其余页面请查看原文，可以随时暂停或停下。' : '补完这一轮后自动做下一轮，直到每个小节都有题；可以随时暂停或停下。')}
         onClick={() => onTopUp?.(draft, sectionIds, round)}>{actionLabel('topup')}</Button>
       {modelReady && call && <div className="cov-topup__estimate"><TokenEstimate enabled align="end" request={{ feature: 'generate', resumeDraftId: draft.id, draftVersion: draft.draftVersion, coverage: { sectionIds } }} /></div>}
     </div>

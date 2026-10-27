@@ -8,7 +8,7 @@ import { isActiveJob } from '../job-visibility.js';
 import { shortfallOf } from '../../lib/shortfall.js';
 import { coverageFromDigest } from '../../lib/coverage.js';
 import css from './coverage.css';
-import { actionLabel, allCoveredText, coveragePathText, nextRoundText } from './copy.js';
+import { actionLabel, noTopUpText, coveragePathText, nextRoundText } from './copy.js';
 import { topUpNotice } from './top-up.js';
 import { useCoverage } from './use-coverage.js';
 import { jobPart, partStartLine, partTitle } from '../deck-parts.js';
@@ -24,6 +24,7 @@ import { jobPart, partStartLine, partTitle } from '../deck-parts.js';
 export function offersDocumentTopUp({ item, coverage, jobs = [], modelReady = true }) {
   const c = Array.isArray(coverage) ? coverageFromDigest(coverage) : coverage;
   if (!modelReady || !item || !(c?.leaves > 0) || c.covered >= c.leaves) return false;
+  if (c.covered + (c.evidenceIssues?.nonContent || 0) + (c.evidenceIssues?.insufficientText || 0) >= c.leaves) return false;
   if (!(item.usedBy || []).some((ref) => ref.kind === 'deck' && !ref.archived)) return false;
   return !jobs.some((job) => isActiveJob(job) && jobPart(job)?.documentKey === item.key);
 }
@@ -34,7 +35,7 @@ export function DocumentTopUpBody({ view, onStart }) {
   const [deckId, setDeckId] = useState(null);
   const offer = view?.topUp;
   if (!offer?.canTopUp) return <div className="cov-topup cov-topup--panel" data-document-topup data-coverage-complete>
-    <p className="cov-topup__done">{offer?.inFlight > 0 ? ui('没覆盖的小节正在另一份草稿里补题，请到那份草稿继续。') : allCoveredText(view?.coverage?.units)}</p>
+    <p className="cov-topup__done">{offer?.inFlight > 0 ? ui('没覆盖的小节正在另一份草稿里补题，请到那份草稿继续。') : noTopUpText(view?.coverage)}</p>
   </div>;
   const chosen = offer.candidates.find((candidate) => candidate.id === deckId) || offer.candidates[0];
   const shortfall = shortfallOf({ coverage: view.coverage, round: offer.round });
@@ -47,7 +48,7 @@ export function DocumentTopUpBody({ view, onStart }) {
     {coveragePathText(shortfall) && <p className="cov-topup__path" data-coverage-path>{coveragePathText(shortfall)}</p>}
     <div className="cov-topup__act">
       {/* The cost is on the button that spends it: this round's estimate, and that the rounds after it go on by themselves and are counted on their own. */}
-      <Button className="cov-topup__button cov-topup__button--cost" variant="primary" disabled={busy} data-coverage-start title={ui('补完这一轮后自动做下一轮，直到每个小节都有题；可以随时暂停或停下。')}
+      <Button className="cov-topup__button cov-topup__button--cost" variant="primary" disabled={busy} data-coverage-start title={ui(shortfall.evidenceIssues ? '补完这一轮后继续补齐可出题部分；其余页面请查看原文，可以随时暂停或停下。' : '补完这一轮后自动做下一轮，直到每个小节都有题；可以随时暂停或停下。')}
         onClick={() => onStart?.(args, chosen)}>
         <span>{actionLabel('topup')}</span>
         <RoundCost request={{ feature: 'generate', ...args }} roundsAfter={Math.max(0, (shortfall.roundsToFull ?? 1) - 1)} />

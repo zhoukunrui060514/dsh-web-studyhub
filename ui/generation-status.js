@@ -385,7 +385,10 @@ const clipRaw = (value, size = 160) => (value.length > size ? `${value.slice(0, 
 export function describeFailure(text = '', options = {}) {
   const raw = String(text || ''), found = classifyFailure(raw), own = ownCause(raw);
   if (own) {
-    const copy = OWN_FAILURES[own];
+    const copy = own === 'plan-short' && /insufficient evidence/i.test(raw) ? {
+      action: 'retry', title: '模型未找到可新增的原文考点', cause: '模型未找到可新增的原文考点',
+      hint: '请查看对应页面：可能只有标题、图中文字未提取，或内容与已有题目重复。补充原文后再补题，避免反复重试。',
+    } : OWN_FAILURES[own];
     return { kind: own, code: own, action: copy.action, title: ui(copy.title), cause: ui(copy.cause), retried: retriedNote(own, found.retries), hint: ui(copy.hint) };
   }
   const legacy = failureKind(raw, options);

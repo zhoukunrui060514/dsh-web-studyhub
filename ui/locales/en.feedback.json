@@ -37,5 +37,17 @@
   "页面翻译": "page translations",
   "上传 {0}": "Uploading {0}",
   "图谱加载失败": "The graph could not be loaded",
-  "这个页面没能打开": "This page could not be opened"
+  "这个页面没能打开": "This page could not be opened",
+  "覆盖现在 {0}（{1}%）→ 本轮后约 {2}%；补齐可出题部分还要 {3} 轮、约 {4} 题，其余页面请查看原文。": "Coverage now {0} ({1}%) → about {2}% after this round; {3} rounds and about {4} questions remain for eligible sections. Inspect the original for the other pages.",
+  "覆盖现在 {0}%；补齐可出题部分还要 {1} 轮、约 {2} 题，其余页面请查看原文。": "Coverage now {0}%; {1} rounds and about {2} questions remain for eligible sections. Inspect the original for the other pages.",
+  "补完这一轮后继续补齐可出题部分；其余页面请查看原文，可以随时暂停或停下。": "After this round, continue with eligible sections. Inspect the original for the other pages. You can pause or stop at any time.",
+  "非考核页面，不强制出题": "Non-assessable page; no question is required",
+  "文字证据不足，请查看原文并补充图表说明": "Insufficient text evidence; inspect the original and add diagram descriptions",
+  "剩余页面为非考核内容或文字证据不足，未标记为已覆盖。请查看原文，必要时补充图表说明后再补题。": "The remaining pages are non-assessable or lack text evidence. They have not been marked covered. Inspect the original and add diagram descriptions if needed before topping up.",
+  "{0} 个非考核页面不强制出题": "{0} non-assessable pages do not require questions",
+  "{0} 个页面需补充原文或图表说明": "{0} pages need more source text or diagram descriptions",
+  "已覆盖、正在出题或缺少文字证据的部分会跳过；具体页面见下方。": "Covered sections, active work and sections without enough text evidence are skipped; see the pages below.",
+  "「{0}」有 {1} 个页面暂不补题": "{0}: {1} pages are held from question generation",
+  "模型未找到可新增的原文考点": "The model found no additional source-supported learning targets",
+  "请查看对应页面：可能只有标题、图中文字未提取，或内容与已有题目重复。补充原文后再补题，避免反复重试。": "Inspect the relevant pages: they may contain only headings, unextracted diagram text, or content already covered by existing questions. Add source evidence before topping up instead of repeatedly retrying."
 }

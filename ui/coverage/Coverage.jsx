@@ -4,7 +4,7 @@ import { Button, Disclosure, StackedBar, Tooltip } from '../components/index.js'
 import { useInjectCss } from '../shared.js';
 import { coverageFromDigest } from '../../lib/coverage.js';
 import css from './coverage.css';
-import { countOf, coverageChipText, coverageLine, planLine, sectionName, stateMeaning, stateWord, reasonWord, uncoveredHead, weightLine } from './copy.js';
+import { countOf, coverageChipText, coverageLine, planLine, sectionName, stateMeaning, stateWord, reasonWord, uncoveredHead, weightLine, evidenceIssueText } from './copy.js';
 
 /* 覆盖 on screen: the bar, the mark beside an outline entry, the chip beside the mastery mark and the summary of a draft. They are drawn from lib/coverage.js's result
    (`coverage.get`, the snapshot's materialCoverage) and say it in ui/coverage/copy.js, so every screen shows the same numbers in the same words. */
@@ -83,7 +83,7 @@ function UncoveredList({ coverage, onOpen }) {
         return <li key={section.key} data-section={section.key} data-state={section.state}>
           <CoverageMark state={section.state} reason={section.reason} recorded={coverage.recorded} scheduled={!!section.scheduled} title={sectionName(section)} />
           <span className="cov-list__name">{sectionName(section)}
-            <small>{[group && uiFormat('录音 {0}', [group.recording]), section.state === 'planned-failed' ? uiFormat('计划了没出成：{0}', [reasonWord(section.reason)]) : stateWord(section.state, coverage.recorded, !!section.scheduled)].filter(Boolean).join(' · ')}</small>
+            <small>{[group && uiFormat('录音 {0}', [group.recording]), evidenceIssueText(section.evidenceIssue) || (section.state === 'planned-failed' ? uiFormat('计划了没出成：{0}', [reasonWord(section.reason)]) : stateWord(section.state, coverage.recorded, !!section.scheduled))].filter(Boolean).join(' · ')}</small>
             {section.weight && <small className="cov-list__why" data-section-why>{weightLine(section.weight)}</small>}
           </span>
           {onOpen && <Button size="sm" variant="quiet" className="cov-list__open" onClick={() => onOpen(section)} data-section-open={section.key}>{ui('在资料中查看')}</Button>}

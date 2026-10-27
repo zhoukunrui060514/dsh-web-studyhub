@@ -33,6 +33,13 @@ const ALL = { part: () => ui('每个小节都有题了。'), page: () => ui('每
   window: () => ui('每个片段都有题了。'), section: () => ui('每个小节都有题了。') };
 export const allCoveredText = (units) => (ALL[units] || ALL.section)();
 
+export const evidenceIssueText = issue => issue === 'non-content' ? ui('非考核页面，不强制出题')
+  : issue === 'insufficient-text' ? ui('文字证据不足，请查看原文并补充图表说明') : '';
+
+export const noTopUpText = coverage => coverage?.evidenceIssues
+  ? ui('剩余页面为非考核内容或文字证据不足，未标记为已覆盖。请查看原文，必要时补充图表说明后再补题。')
+  : allCoveredText(coverage?.units);
+
 /** 「覆盖 7/80 个小节（9%）」 */
 export const coverageHead = (c) => uiFormat('覆盖 {0}/{1}（{2}%）', [c.covered, countOf(c.units, c.leaves), c.percentLeaves]);
 
@@ -46,7 +53,9 @@ export const scheduledText = (n) => uiFormat('{0} 个排在后面的轮次', [n]
 /** 「覆盖 7/80 个小节（9%）· 3 个计划了没出成 · 70 个没计划到」; a draft with a plan says 「… · 60 个排在后面的轮次 · 10 个没计划到」. */
 export function coverageLine(c) {
   const scheduled = Math.min(c.scheduled || 0, c.neverPlanned || 0), never = c.neverPlanned - scheduled;
-  return [coverageHead(c), c.plannedFailed > 0 && plannedFailedText(c.plannedFailed), scheduled > 0 && scheduledText(scheduled), never > 0 && neverPlannedText(never, c.recorded)].filter(Boolean).join(META_DOT);
+  return [coverageHead(c), c.plannedFailed > 0 && plannedFailedText(c.plannedFailed), scheduled > 0 && scheduledText(scheduled), never > 0 && neverPlannedText(never, c.recorded),
+    c.evidenceIssues?.nonContent > 0 && uiFormat('{0} 个非考核页面不强制出题', [c.evidenceIssues.nonContent]),
+    c.evidenceIssues?.insufficientText > 0 && uiFormat('{0} 个页面需补充原文或图表说明', [c.evidenceIssues.insufficientText])].filter(Boolean).join(META_DOT);
 }
 
 /** 「覆盖 9%」: the chip beside the mastery mark. */
@@ -377,6 +386,7 @@ export function continueLine(s) {
 export function coveragePathText(s) {
   if (!(s?.roundsToFull > 0) || !(s.questionsToFull > 0) || !Number.isFinite(s.afterRoundPercent) || !Number.isFinite(s.coveragePercent) || !(s.sectionsTotal > 0)) return '';
   const now = `${s.sectionsCovered}/${countOf(s.units, s.sectionsTotal)}`;
+  if (s.evidenceIssues) return uiFormat('覆盖现在 {0}（{1}%）→ 本轮后约 {2}%；补齐可出题部分还要 {3} 轮、约 {4} 题，其余页面请查看原文。', [now, s.coveragePercent, s.afterRoundPercent, s.roundsToFull, s.questionsToFull]);
   return s.roundsToFull === 1 ? uiFormat('覆盖现在 {0}（{1}%）→ 本轮后约 {2}% → 目标 100%，还要 1 轮、约 {3} 题', [now, s.coveragePercent, s.afterRoundPercent, s.questionsToFull])
     : uiFormat('覆盖现在 {0}（{1}%）→ 本轮后约 {2}% → 目标 100%，还要 {3} 轮、约 {4} 题', [now, s.coveragePercent, s.afterRoundPercent, s.roundsToFull, s.questionsToFull]);
 }
@@ -386,6 +396,7 @@ export function coveragePathText(s) {
 export function runPathText(run) {
   const rounds = Number.isInteger(run?.roundsLeft) ? run.roundsLeft : run?.left;
   if (!run?.total || run.ended || !Number.isFinite(run.percent) || !(rounds > 0) || !(run.questionsLeft > 0)) return '';
+  if (run.evidenceIssues) return uiFormat('覆盖现在 {0}%；补齐可出题部分还要 {1} 轮、约 {2} 题，其余页面请查看原文。', [run.percent, rounds, run.questionsLeft]);
   return rounds === 1 ? uiFormat('覆盖现在 {0}% → 目标 100%，还要 1 轮、约 {1} 题', [run.percent, run.questionsLeft])
     : uiFormat('覆盖现在 {0}% → 目标 100%，还要 {1} 轮、约 {2} 题', [run.percent, rounds, run.questionsLeft]);
 }
